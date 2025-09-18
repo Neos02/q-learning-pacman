@@ -13,6 +13,11 @@ pygame.display.set_caption('Pac-Man')
 
 pygame.event.set_allowed([QUIT, KEYDOWN])
 
+
+def load_image(path, scale=2):
+    return pygame.transform.scale_by(pygame.image.load(path).convert_alpha(), scale)
+
+
 if __name__ == '__main__':
     from game import Game
 

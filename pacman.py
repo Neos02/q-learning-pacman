@@ -2,19 +2,33 @@ import pygame
 
 from pygame.locals import *
 
-from main import SCREEN_WIDTH
+from main import SCREEN_WIDTH, load_image
 
 
 class Pacman(pygame.sprite.Sprite):
     speed = 200
+    sprite_scale = 2
+    spritesheet = load_image("./images/pacman.png", sprite_scale)
+    sprite_size = sprite_scale * 13
+    animation_frame_length_ms = 60
 
     def __init__(self):
         super().__init__()
-        self.rect = pygame.Rect(0, 0, 32, 32)
+        self.image = Pacman.spritesheet
+        self.image_offset = 0
+        self.rect = pygame.Rect(0, 0, Pacman.sprite_size, Pacman.sprite_size)
         self.velocity = (0, 0)
+        self.last_frame_update_time = 0
 
     def draw(self, surface):
-        pygame.draw.circle(surface, (255, 255, 0), self.rect.center, self.rect.width // 2)
+        ticks = pygame.time.get_ticks()
+
+        if (ticks - self.last_frame_update_time) >= self.animation_frame_length_ms:
+            self.image_offset = (self.image_offset + Pacman.sprite_size) % self.image.get_width()
+            self.last_frame_update_time = ticks
+
+        surface.blit(self.spritesheet, (self.rect.left, self.rect.top),
+                     (self.image_offset, 0, Pacman.sprite_size, Pacman.sprite_size))
 
     def move(self, deltatime):
         pressed_keys = pygame.key.get_pressed()
