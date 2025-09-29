@@ -14,9 +14,9 @@ class Pacman(pygame.sprite.Sprite):
 
     def __init__(self):
         super().__init__()
-        self.image = Pacman.spritesheet
-        self.image_offset = 0
         self.rect = pygame.Rect(0, 0, Pacman.sprite_size, Pacman.sprite_size)
+        self.image_rect = self.rect.copy()
+        self.image = Pacman.spritesheet.subsurface(self.image_rect)
         self.velocity = (0, 0)
         self.last_frame_update_time = 0
 
@@ -24,11 +24,18 @@ class Pacman(pygame.sprite.Sprite):
         ticks = pygame.time.get_ticks()
 
         if (ticks - self.last_frame_update_time) >= self.animation_frame_length_ms:
-            self.image_offset = (self.image_offset + Pacman.sprite_size) % self.image.get_width()
+            self.image_rect.left = (self.image_rect.left + Pacman.sprite_size) % Pacman.spritesheet.get_width()
+            self.image = Pacman.spritesheet.subsurface(self.image_rect)
             self.last_frame_update_time = ticks
 
-        surface.blit(self.spritesheet, (self.rect.left, self.rect.top),
-                     (self.image_offset, 0, Pacman.sprite_size, Pacman.sprite_size))
+            if self.velocity == (0, -self.speed):
+                self.image = pygame.transform.rotate(self.image, -90)
+            elif self.velocity == (0, self.speed):
+                self.image = pygame.transform.rotate(self.image, 90)
+            elif self.velocity == (self.speed, 0):
+                self.image = pygame.transform.rotate(self.image, 180)
+
+        surface.blit(self.image, self.rect)
 
     def move(self, deltatime):
         pressed_keys = pygame.key.get_pressed()
