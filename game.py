@@ -5,6 +5,8 @@ from pygame.locals import *
 
 from main import DISPLAY_SURFACE, FPS
 from pacman import Pacman
+from tilemap import Tilemap
+from tileset import Tileset
 
 
 class Game:
@@ -12,6 +14,8 @@ class Game:
     def __init__(self):
         self.deltatime = 0
         self.player = Pacman()
+        self.tilemap = Tilemap(Tileset("./images/tileset.png"))
+        self.tilemap.set_random()
 
     def _move(self):
         self.player.move(self.deltatime)
@@ -19,6 +23,7 @@ class Game:
     def _draw(self):
         DISPLAY_SURFACE.fill((0, 0, 0))
 
+        self.tilemap.draw(DISPLAY_SURFACE)
         self.player.draw(DISPLAY_SURFACE)
 
         pygame.display.update()
