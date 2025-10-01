@@ -6,8 +6,8 @@ pygame.init()
 
 FPS = 60
 
-SCREEN_WIDTH = 600
-SCREEN_HEIGHT = 800
+SCREEN_WIDTH = 448
+SCREEN_HEIGHT = 576
 DISPLAY_SURFACE = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), flags=DOUBLEBUF)
 pygame.display.set_caption('Pac-Man')
 

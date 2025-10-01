@@ -14,8 +14,7 @@ class Game:
     def __init__(self):
         self.deltatime = 0
         self.player = Pacman()
-        self.tilemap = Tilemap(Tileset("./images/tileset.png"))
-        self.tilemap.set_random()
+        self.tilemap = Tilemap("./maps/original.json", Tileset("./images/tileset.png"))
 
     def _move(self):
         self.player.move(self.deltatime)
