@@ -1,8 +1,8 @@
 import sys
 import pygame
+import numpy as np
 
 from pygame.locals import *
-
 from main import DISPLAY_SURFACE, FPS
 from pacman import Pacman
 from tilemap import Tilemap
@@ -13,8 +13,11 @@ class Game:
 
     def __init__(self):
         self.deltatime = 0
-        self.player = Pacman()
         self.tilemap = Tilemap("./maps/original.json", Tileset("./images/tileset.png"))
+        player_start_pos = np.where(self.tilemap.map == Tilemap.start_tile_id)
+        self.player = Pacman(
+            start_pos=(player_start_pos[1][0] * self.tilemap.tile_size,
+                       player_start_pos[0][0] * self.tilemap.tile_size))
 
     def _move(self):
         self.player.move(self.deltatime)

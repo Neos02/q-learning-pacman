@@ -12,13 +12,15 @@ class Pacman(pygame.sprite.Sprite):
     sprite_size = sprite_scale * 13
     animation_frame_length_ms = 60
 
-    def __init__(self):
+    def __init__(self, start_pos=(0, 0)):
         super().__init__()
+        self.start_pos = (start_pos[0] + 2 * Pacman.sprite_scale, start_pos[1] - 2 * Pacman.sprite_scale)
         self.rect = pygame.Rect(0, 0, Pacman.sprite_size, Pacman.sprite_size)
         self.image_rect = self.rect.copy()
         self.image = Pacman.spritesheet.subsurface(self.image_rect)
         self.velocity = (0, 0)
         self.last_frame_update_time = 0
+        self.rect.move_ip(*self.start_pos)
 
     def draw(self, surface):
         ticks = pygame.time.get_ticks()
