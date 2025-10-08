@@ -17,7 +17,9 @@ class Game:
         player_start_pos = np.where(self.tilemap.map == Tilemap.start_tile_id)
         self.player = Pacman(
             start_pos=(player_start_pos[1][0] * self.tilemap.tile_size,
-                       player_start_pos[0][0] * self.tilemap.tile_size))
+                       player_start_pos[0][0] * self.tilemap.tile_size),
+            tilemap=self.tilemap
+        )
 
     def _move(self):
         self.player.move(self.deltatime)

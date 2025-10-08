@@ -12,7 +12,7 @@ class Pacman(pygame.sprite.Sprite):
     sprite_size = sprite_scale * 13
     animation_frame_length_ms = 60
 
-    def __init__(self, start_pos=(0, 0)):
+    def __init__(self, start_pos=(0, 0), tilemap=None):
         super().__init__()
         self.start_pos = (start_pos[0] + 2 * Pacman.sprite_scale, start_pos[1] - 2 * Pacman.sprite_scale)
         self.rect = pygame.Rect(0, 0, Pacman.sprite_size, Pacman.sprite_size)
@@ -21,6 +21,7 @@ class Pacman(pygame.sprite.Sprite):
         self.velocity = (0, 0)
         self.last_frame_update_time = 0
         self.rect.move_ip(*self.start_pos)
+        self.tilemap = tilemap
 
     def draw(self, surface):
         ticks = pygame.time.get_ticks()
@@ -59,7 +60,12 @@ class Pacman(pygame.sprite.Sprite):
         if pressed_keys[K_d]:
             self.velocity = (self.speed, 0)
 
-        self.rect.move_ip(self.velocity[0] * deltatime, self.velocity[1] * deltatime)
+        next_position = (self.rect.centerx + self.velocity[0] * deltatime,
+                         self.rect.centery + self.velocity[1] * deltatime)
+
+        if not self.has_collision(next_position):
+            self.rect.centerx = next_position[0]
+            self.rect.centery = next_position[1]
 
         # wrap when off the screen horizontally
         if self.rect.right < 0:
@@ -67,3 +73,12 @@ class Pacman(pygame.sprite.Sprite):
 
         if self.rect.left > SCREEN_WIDTH:
             self.rect.move_ip(-SCREEN_WIDTH - self.rect.width, 0)
+
+    def has_collision(self, next_position):
+        if self.tilemap is None:
+            return False
+
+        player_x = int(next_position[0] // self.tilemap.tile_size)
+        player_y = int(next_position[1] // self.tilemap.tile_size)
+
+        return self.tilemap.map[player_y, player_x] != 7
