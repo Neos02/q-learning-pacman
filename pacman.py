@@ -49,48 +49,24 @@ class Pacman(pygame.sprite.Sprite):
         surface.blit(self.image, self.rect)
 
     def move(self, deltatime):
-        pressed_keys = pygame.key.get_pressed()
-        h, w = self.tilemap.map.shape
-        player_tile_x = self.rect.centerx // self.tilemap.tile_size
-        player_tile_y = self.rect.centery // self.tilemap.tile_size
+        current_tile_x, current_tile_y = self._get_tile_coordinates(self.rect.centerx, self.rect.centery)
 
-        if 0 <= player_tile_x < w and 0 <= player_tile_y < h:
-            if pressed_keys[K_w]:
-                self.queued_velocity = (0, -self.speed)
+        # only allow input when player is on screen
+        if self._is_in_bounds(current_tile_x, current_tile_y):
+            self._handle_input()
 
-            if pressed_keys[K_a]:
-                self.queued_velocity = (-self.speed, 0)
+            queued_tile_x = int(current_tile_x + self.queued_velocity[0] / self.speed)
+            queued_tile_y = int(current_tile_y + self.queued_velocity[1] / self.speed)
 
-            if pressed_keys[K_s]:
-                self.queued_velocity = (0, self.speed)
-
-            if pressed_keys[K_d]:
-                self.queued_velocity = (self.speed, 0)
-
-            next_tile_x = int(player_tile_x + self.queued_velocity[0] / self.speed)
-            next_tile_y = int(player_tile_y + self.queued_velocity[1] / self.speed)
-
-            if 0 <= next_tile_x < w and 0 <= next_tile_y < h and Tile(
-                    self.tilemap.map[next_tile_y, next_tile_x]) in Pacman.transparent_tiles:
+            if self._is_in_bounds(queued_tile_x, queued_tile_y) and \
+                    self._get_tile(queued_tile_x, queued_tile_y) in Pacman.transparent_tiles:
                 self.velocity = self.queued_velocity
+                self._realign(self.velocity[0] == 0, self.velocity[1] == 0)
 
-                if self.velocity[0] != 0:
-                    self.rect.centery = next_tile_y * self.tilemap.tile_size + self.tilemap.tile_size / 2
-
-                if self.velocity[1] != 0:
-                    self.rect.centerx = next_tile_x * self.tilemap.tile_size + self.tilemap.tile_size / 2
-
-        next_position = (self.rect.centerx + self.velocity[0] * deltatime,
-                         self.rect.centery + self.velocity[1] * deltatime)
-
-        if not self.has_collision(next_position):
-            self.rect.centerx = next_position[0]
-            self.rect.centery = next_position[1]
-        else:
-            self.rect.centerx = player_tile_x * self.tilemap.tile_size + self.tilemap.tile_size / 2
-            self.rect.centery = player_tile_y * self.tilemap.tile_size + self.tilemap.tile_size / 2
-            self.velocity = (0, 0)
-            self.queued_velocity = (0, 0)
+        self._handle_collisions_and_update_position((
+            self.rect.centerx + self.velocity[0] * deltatime,
+            self.rect.centery + self.velocity[1] * deltatime
+        ))
 
         # wrap when off the screen horizontally
         if self.rect.right < 0:
@@ -99,15 +75,56 @@ class Pacman(pygame.sprite.Sprite):
         if self.rect.left > SCREEN_WIDTH:
             self.rect.move_ip(-SCREEN_WIDTH - self.rect.width, 0)
 
-    def has_collision(self, next_position):
+    def _handle_collisions_and_update_position(self, position):
+        if not self._has_collision(position):
+            self.rect.centerx = position[0]
+            self.rect.centery = position[1]
+        else:
+            self._realign()
+            self.velocity = (0, 0)
+            self.queued_velocity = (0, 0)
+
+    def _has_collision(self, position):
         if self.tilemap is None:
             return False
 
+        current_tile_x, current_tile_y = self._get_tile_coordinates(position[0], position[1])
+
+        if self._is_in_bounds(current_tile_x, current_tile_y):
+            return self._get_tile(current_tile_x, current_tile_y) not in Pacman.transparent_tiles
+
+        return False
+
+    def _get_tile_coordinates(self, center_x, center_y):
+        return int(center_x // self.tilemap.tile_size), int(center_y // self.tilemap.tile_size)
+
+    def _handle_input(self):
+        pressed_keys = pygame.key.get_pressed()
+
+        if pressed_keys[K_w]:
+            self.queued_velocity = (0, -self.speed)
+
+        if pressed_keys[K_a]:
+            self.queued_velocity = (-self.speed, 0)
+
+        if pressed_keys[K_s]:
+            self.queued_velocity = (0, self.speed)
+
+        if pressed_keys[K_d]:
+            self.queued_velocity = (self.speed, 0)
+
+    def _realign(self, realign_x=True, realign_y=True):
+        current_tile_x, current_tile_y = self._get_tile_coordinates(self.rect.centerx, self.rect.centery)
+
+        if realign_x:
+            self.rect.centerx = current_tile_x * self.tilemap.tile_size + self.tilemap.tile_size / 2
+
+        if realign_y:
+            self.rect.centery = current_tile_y * self.tilemap.tile_size + self.tilemap.tile_size / 2
+
+    def _get_tile(self, x, y):
+        return Tile(self.tilemap.map[y, x])
+
+    def _is_in_bounds(self, tile_x, tile_y):
         h, w = self.tilemap.map.shape
-        player_x = int(next_position[0] // self.tilemap.tile_size)
-        player_y = int(next_position[1] // self.tilemap.tile_size)
-
-        if player_y < 0 or player_y >= h or player_x < 0 or player_x >= w:
-            return False
-
-        return Tile(self.tilemap.map[player_y, player_x]) not in Pacman.transparent_tiles
+        return 0 <= tile_x < w and 0 <= tile_y < h
