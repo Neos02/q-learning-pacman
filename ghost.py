@@ -72,6 +72,7 @@ class Ghost(pygame.sprite.Sprite):
         )
 
     def move(self, deltatime):
+        map_h, map_w = self.tilemap.map.shape
         current_tile_x, current_tile_y = self._get_tile_coordinates(self.rect.centerx, self.rect.centery)
         next_position = (
             self.rect.centerx + self.velocity[0] * deltatime,
@@ -89,41 +90,43 @@ class Ghost(pygame.sprite.Sprite):
                     min_y <= (0.5 + self.next_tile[1]) * self.tilemap.tile_size <= max_y:
                 self.velocity = self.next_velocity
                 self.next_tile = (
-                    int(current_tile_x + self.velocity[0] / Ghost.speed),
-                    int(current_tile_y + self.velocity[1] / Ghost.speed)
+                    int(current_tile_x + self.velocity[0] / Ghost.speed) % map_w,
+                    int(current_tile_y + self.velocity[1] / Ghost.speed) % map_h
                 )
                 target_x, target_y = self._get_tile_coordinates(self.pacman.rect.centerx, self.pacman.rect.centery)
-                tile_choices = [
-                    (
-                        self.next_tile[0],
-                        self.next_tile[1] - 1
-                    ),
-                    (
-                        self.next_tile[0] - 1,
-                        self.next_tile[1]
-                    ),
-                    (
-                        self.next_tile[0],
-                        self.next_tile[1] + 1
-                    ),
-                    (
-                        self.next_tile[0] + 1,
-                        self.next_tile[1]
-                    )
-                ]
-                min_distance = math.inf
 
-                for tile in tile_choices:
-                    if self.tilemap.get_tile(tile[0], tile[1]) not in self.transparent_tiles \
-                            or tile == (current_tile_x, current_tile_y):
-                        continue
+                if 0 <= self.next_tile[0] < map_w and 0 <= self.next_tile[1] < map_h:
+                    tile_choices = [
+                        (
+                            self.next_tile[0],
+                            self.next_tile[1] - 1
+                        ),
+                        (
+                            self.next_tile[0] - 1,
+                            self.next_tile[1]
+                        ),
+                        (
+                            self.next_tile[0],
+                            self.next_tile[1] + 1
+                        ),
+                        (
+                            self.next_tile[0] + 1,
+                            self.next_tile[1]
+                        )
+                    ]
+                    min_distance = math.inf
 
-                    distance = math.dist(tile, (target_x, target_y))
+                    for tile in tile_choices:
+                        if self.tilemap.get_tile(tile[0], tile[1]) not in self.transparent_tiles \
+                                or tile == (current_tile_x, current_tile_y):
+                            continue
 
-                    if distance < min_distance:
-                        min_distance = distance
-                        self.next_velocity = ((tile[0] - self.next_tile[0]) * Ghost.speed,
-                                              (tile[1] - self.next_tile[1]) * Ghost.speed)
+                        distance = math.dist(tile, (target_x, target_y))
+
+                        if distance < min_distance:
+                            min_distance = distance
+                            self.next_velocity = ((tile[0] - self.next_tile[0]) * Ghost.speed,
+                                                  (tile[1] - self.next_tile[1]) * Ghost.speed)
 
         self.rect.centerx = next_position[0]
         self.rect.centery = next_position[1]
