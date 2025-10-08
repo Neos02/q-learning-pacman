@@ -74,6 +74,12 @@ class Pacman(pygame.sprite.Sprite):
                     self.tilemap.map[next_tile_y, next_tile_x]) in Pacman.transparent_tiles:
                 self.velocity = self.queued_velocity
 
+                if self.velocity[0] != 0:
+                    self.rect.centery = next_tile_y * self.tilemap.tile_size + self.tilemap.tile_size / 2
+
+                if self.velocity[1] != 0:
+                    self.rect.centerx = next_tile_x * self.tilemap.tile_size + self.tilemap.tile_size / 2
+
         next_position = (self.rect.centerx + self.velocity[0] * deltatime,
                          self.rect.centery + self.velocity[1] * deltatime)
 
