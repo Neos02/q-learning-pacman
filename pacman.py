@@ -32,6 +32,7 @@ class Pacman(pygame.sprite.Sprite):
         # make pacman be closed when not moving
         if self.velocity == (0, 0):
             self.image_rect.left = 0
+            self.image = Pacman.spritesheet.subsurface(self.image_rect)
             self.last_frame_update_time = ticks
 
         if (ticks - self.last_frame_update_time) >= self.animation_frame_length_ms:
