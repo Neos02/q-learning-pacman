@@ -86,6 +86,11 @@ class Pacman(pygame.sprite.Sprite):
         if not self.has_collision(next_position):
             self.rect.centerx = next_position[0]
             self.rect.centery = next_position[1]
+        else:
+            self.rect.centerx = player_tile_x * self.tilemap.tile_size + self.tilemap.tile_size / 2
+            self.rect.centery = player_tile_y * self.tilemap.tile_size + self.tilemap.tile_size / 2
+            self.velocity = (0, 0)
+            self.queued_velocity = (0, 0)
 
         # wrap when off the screen horizontally
         if self.rect.right < 0:
