@@ -1,3 +1,5 @@
+import math
+
 import pygame
 
 from main import SCREEN_WIDTH, load_image
@@ -16,19 +18,21 @@ class Ghost(pygame.sprite.Sprite):
     pupil_size = (sprite_scale * 2, sprite_scale * 2)
     pupil_image = spritesheet.subsurface(pygame.Rect(sprite_size * 4, eye_size[1], *pupil_size))
 
-    transparent_tiles = [Tile.AIR, Tile.SMALL_DOT, Tile.BIG_DOT, Tile.GHOST_GATE]
+    transparent_tiles = [Tile.AIR, Tile.SMALL_DOT, Tile.BIG_DOT]
 
-    def __init__(self, start_pos=(0, 0), tilemap=None):
+    def __init__(self, pacman, tilemap, start_pos=(0, 0)):
         super().__init__()
         self.start_pos = (start_pos[0] + 2 * Ghost.sprite_scale, start_pos[1] - 2 * Ghost.sprite_scale)
         self.rect = pygame.Rect(0, 0, Ghost.sprite_size, Ghost.sprite_size)
         self.image_rect = self.rect.copy()
         self.image = Ghost.spritesheet.subsurface(self.image_rect)
         self.velocity = (0, 0)
-        self.last_frame_update_time = 0
         self.rect.move_ip(*self.start_pos)
         self.tilemap = tilemap
         self.queued_velocity = (0, 0)
+        self.pacman = pacman
+        self.next_tile = None
+        self.next_velocity = (-Ghost.speed, 0)
 
     def draw(self, surface):
         surface.blit(self.image, self.rect)
@@ -69,23 +73,64 @@ class Ghost(pygame.sprite.Sprite):
 
     def move(self, deltatime):
         current_tile_x, current_tile_y = self._get_tile_coordinates(self.rect.centerx, self.rect.centery)
-
-        # only allow input when player is on screen
-        if self._is_in_bounds(current_tile_x, current_tile_y):
-            queued_tile_x = int(current_tile_x + self.queued_velocity[0] / self.speed)
-            queued_tile_y = int(current_tile_y + self.queued_velocity[1] / self.speed)
-
-            if not self._has_collision(queued_tile_x, queued_tile_y):
-                self.velocity = self.queued_velocity
-                self._realign(
-                    self.velocity[0] == 0 and self.velocity[1] != 0,
-                    self.velocity[0] != 0 and self.velocity[1] == 0
-                )
-
-        self._handle_collisions_and_update_position((
+        next_position = (
             self.rect.centerx + self.velocity[0] * deltatime,
             self.rect.centery + self.velocity[1] * deltatime
-        ))
+        )
+
+        if self.next_tile is None or (current_tile_x, current_tile_y) == self.next_tile:
+            min_x = min(next_position[0], self.rect.centerx)
+            max_x = max(next_position[0], self.rect.centerx)
+            min_y = min(next_position[1], self.rect.centery)
+            max_y = max(next_position[1], self.rect.centery)
+
+            if self.next_tile is None or \
+                    min_x <= (0.5 + self.next_tile[0]) * self.tilemap.tile_size <= max_x or \
+                    min_y <= (0.5 + self.next_tile[1]) * self.tilemap.tile_size <= max_y:
+                self.velocity = self.next_velocity
+                self.next_tile = (
+                    int(current_tile_x + self.velocity[0] / Ghost.speed),
+                    int(current_tile_y + self.velocity[1] / Ghost.speed)
+                )
+                target_x, target_y = self._get_tile_coordinates(self.pacman.rect.centerx, self.pacman.rect.centery)
+                tile_choices = [
+                    (
+                        self.next_tile[0],
+                        self.next_tile[1] - 1
+                    ),
+                    (
+                        self.next_tile[0] - 1,
+                        self.next_tile[1]
+                    ),
+                    (
+                        self.next_tile[0],
+                        self.next_tile[1] + 1
+                    ),
+                    (
+                        self.next_tile[0] + 1,
+                        self.next_tile[1]
+                    )
+                ]
+                min_distance = math.inf
+
+                for tile in tile_choices:
+                    if self.tilemap.get_tile(tile[0], tile[1]) not in self.transparent_tiles \
+                            or tile == (current_tile_x, current_tile_y):
+                        continue
+
+                    distance = math.dist(tile, (target_x, target_y))
+
+                    if distance < min_distance:
+                        min_distance = distance
+                        self.next_velocity = ((tile[0] - self.next_tile[0]) * Ghost.speed,
+                                              (tile[1] - self.next_tile[1]) * Ghost.speed)
+
+        self.rect.centerx = next_position[0]
+        self.rect.centery = next_position[1]
+        self._realign(
+            self.velocity[0] == 0 and self.velocity[1] != 0,
+            self.velocity[0] != 0 and self.velocity[1] == 0
+        )
 
         # wrap when off the screen horizontally
         if self.rect.right < 0:
@@ -93,34 +138,6 @@ class Ghost(pygame.sprite.Sprite):
 
         if self.rect.left > SCREEN_WIDTH:
             self.rect.move_ip(-SCREEN_WIDTH - self.rect.width, 0)
-
-    def _handle_collisions_and_update_position(self, position):
-        current_tile_x, current_tile_y = self._get_tile_coordinates(self.rect.centerx, self.rect.centery)
-        next_tile_x = int(current_tile_x + self.velocity[0] / self.speed)
-        next_tile_y = int(current_tile_y + self.velocity[1] / self.speed)
-
-        if not self._has_collision(current_tile_x, current_tile_y) \
-                and not self._has_collision(next_tile_x, next_tile_y):
-            self.rect.centerx = position[0]
-            self.rect.centery = position[1]
-
-            if self.tilemap.get_tile(current_tile_x, current_tile_y) == Tile.SMALL_DOT:
-                self.tilemap.set_tile(current_tile_x, current_tile_y, Tile.AIR)
-            elif self.tilemap.get_tile(current_tile_x, current_tile_y) == Tile.BIG_DOT:
-                self.tilemap.set_tile(current_tile_x, current_tile_y, Tile.AIR)
-        else:
-            self._realign()
-            self.velocity = (0, 0)
-            self.queued_velocity = (0, 0)
-
-    def _has_collision(self, tile_x, tile_y):
-        if self.tilemap is None:
-            return False
-
-        if self._is_in_bounds(tile_x, tile_y):
-            return self.tilemap.get_tile(tile_x, tile_y) not in Ghost.transparent_tiles
-
-        return False
 
     def _get_tile_coordinates(self, center_x, center_y):
         return int(center_x // self.tilemap.tile_size), int(center_y // self.tilemap.tile_size)
@@ -133,7 +150,3 @@ class Ghost(pygame.sprite.Sprite):
 
         if realign_y:
             self.rect.centery = current_tile_y * self.tilemap.tile_size + self.tilemap.tile_size / 2
-
-    def _is_in_bounds(self, tile_x, tile_y):
-        h, w = self.tilemap.map.shape
-        return 0 <= tile_x < w and 0 <= tile_y < h

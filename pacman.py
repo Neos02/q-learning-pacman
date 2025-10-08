@@ -40,11 +40,11 @@ class Pacman(pygame.sprite.Sprite):
             self.image = Pacman.spritesheet.subsurface(self.image_rect)
             self.last_frame_update_time = ticks
 
-            if self.velocity == (0, -self.speed):
+            if self.velocity == (0, -Pacman.speed):
                 self.image = pygame.transform.rotate(self.image, -90)
-            elif self.velocity == (0, self.speed):
+            elif self.velocity == (0, Pacman.speed):
                 self.image = pygame.transform.rotate(self.image, 90)
-            elif self.velocity == (self.speed, 0):
+            elif self.velocity == (Pacman.speed, 0):
                 self.image = pygame.transform.rotate(self.image, 180)
 
         surface.blit(self.image, self.rect)
@@ -56,8 +56,8 @@ class Pacman(pygame.sprite.Sprite):
         if self._is_in_bounds(current_tile_x, current_tile_y):
             self._handle_input()
 
-            queued_tile_x = int(current_tile_x + self.queued_velocity[0] / self.speed)
-            queued_tile_y = int(current_tile_y + self.queued_velocity[1] / self.speed)
+            queued_tile_x = int(current_tile_x + self.queued_velocity[0] / Pacman.speed)
+            queued_tile_y = int(current_tile_y + self.queued_velocity[1] / Pacman.speed)
 
             if not self._has_collision(queued_tile_x, queued_tile_y):
                 self.velocity = self.queued_velocity
@@ -80,8 +80,8 @@ class Pacman(pygame.sprite.Sprite):
 
     def _handle_collisions_and_update_position(self, position):
         current_tile_x, current_tile_y = self._get_tile_coordinates(self.rect.centerx, self.rect.centery)
-        next_tile_x = int(current_tile_x + self.velocity[0] / self.speed)
-        next_tile_y = int(current_tile_y + self.velocity[1] / self.speed)
+        next_tile_x = int(current_tile_x + self.velocity[0] / Pacman.speed)
+        next_tile_y = int(current_tile_y + self.velocity[1] / Pacman.speed)
 
         if not self._has_collision(current_tile_x, current_tile_y) \
                 and not self._has_collision(next_tile_x, next_tile_y):
@@ -113,16 +113,16 @@ class Pacman(pygame.sprite.Sprite):
         pressed_keys = pygame.key.get_pressed()
 
         if pressed_keys[K_w]:
-            self.queued_velocity = (0, -self.speed)
+            self.queued_velocity = (0, -Pacman.speed)
 
         if pressed_keys[K_a]:
-            self.queued_velocity = (-self.speed, 0)
+            self.queued_velocity = (-Pacman.speed, 0)
 
         if pressed_keys[K_s]:
-            self.queued_velocity = (0, self.speed)
+            self.queued_velocity = (0, Pacman.speed)
 
         if pressed_keys[K_d]:
-            self.queued_velocity = (self.speed, 0)
+            self.queued_velocity = (Pacman.speed, 0)
 
     def _realign(self, realign_x=True, realign_y=True):
         current_tile_x, current_tile_y = self._get_tile_coordinates(self.rect.centerx, self.rect.centery)
