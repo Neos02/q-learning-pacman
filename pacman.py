@@ -12,6 +12,7 @@ class Pacman(pygame.sprite.Sprite):
     spritesheet = load_image("./images/pacman.png", sprite_scale)
     sprite_size = sprite_scale * 13
     animation_frame_length_ms = 60
+    transparent_tiles = [Tile.PLAYER_START, Tile.AIR, Tile.SMALL_DOT, Tile.BIG_DOT]
 
     def __init__(self, start_pos=(0, 0), tilemap=None):
         super().__init__()
@@ -23,6 +24,7 @@ class Pacman(pygame.sprite.Sprite):
         self.last_frame_update_time = 0
         self.rect.move_ip(*self.start_pos)
         self.tilemap = tilemap
+        self.queued_velocity = (0, 0)
 
     def draw(self, surface):
         ticks = pygame.time.get_ticks()
@@ -49,19 +51,28 @@ class Pacman(pygame.sprite.Sprite):
     def move(self, deltatime):
         pressed_keys = pygame.key.get_pressed()
         h, w = self.tilemap.map.shape
+        player_tile_x = self.rect.centerx // self.tilemap.tile_size
+        player_tile_y = self.rect.centery // self.tilemap.tile_size
 
-        if 0 <= self.rect.centerx // self.tilemap.tile_size < w and 0 <= self.rect.centery // self.tilemap.tile_size < h:
+        if 0 <= player_tile_x < w and 0 <= player_tile_y < h:
             if pressed_keys[K_w]:
-                self.velocity = (0, -self.speed)
+                self.queued_velocity = (0, -self.speed)
 
             if pressed_keys[K_a]:
-                self.velocity = (-self.speed, 0)
+                self.queued_velocity = (-self.speed, 0)
 
             if pressed_keys[K_s]:
-                self.velocity = (0, self.speed)
+                self.queued_velocity = (0, self.speed)
 
             if pressed_keys[K_d]:
-                self.velocity = (self.speed, 0)
+                self.queued_velocity = (self.speed, 0)
+
+            next_tile_x = int(player_tile_x + self.queued_velocity[0] / self.speed)
+            next_tile_y = int(player_tile_y + self.queued_velocity[1] / self.speed)
+
+            if 0 <= next_tile_x < w and 0 <= next_tile_y < h and Tile(
+                    self.tilemap.map[next_tile_y, next_tile_x]) in Pacman.transparent_tiles:
+                self.velocity = self.queued_velocity
 
         next_position = (self.rect.centerx + self.velocity[0] * deltatime,
                          self.rect.centery + self.velocity[1] * deltatime)
@@ -88,5 +99,4 @@ class Pacman(pygame.sprite.Sprite):
         if player_y < 0 or player_y >= h or player_x < 0 or player_x >= w:
             return False
 
-        return Tile(self.tilemap.map[player_y, player_x]) not in [Tile.PLAYER_START, Tile.AIR, Tile.SMALL_DOT,
-                                                                  Tile.BIG_DOT]
+        return Tile(self.tilemap.map[player_y, player_x]) not in Pacman.transparent_tiles
