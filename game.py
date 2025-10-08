@@ -3,8 +3,11 @@ import pygame
 import numpy as np
 
 from pygame.locals import *
+
+from ghost import Ghost
 from main import DISPLAY_SURFACE, FPS
 from pacman import Pacman
+from tile import Tile
 from tilemap import Tilemap
 from tileset import Tileset
 
@@ -14,21 +17,23 @@ class Game:
     def __init__(self):
         self.deltatime = 0
         self.tilemap = Tilemap("./maps/original.json", Tileset("./images/tileset.png"))
-        player_start_pos = np.where(self.tilemap.map == Tilemap.start_tile_id)
-        self.player = Pacman(
-            start_pos=(player_start_pos[1][0] * self.tilemap.tile_size,
-                       player_start_pos[0][0] * self.tilemap.tile_size),
-            tilemap=self.tilemap
-        )
+        self.player = Pacman(self._load_start_position(Tile.PLAYER_START), self.tilemap)
+        self.ghosts = [Ghost(self._load_start_position(Tile.GHOST_START), self.tilemap)]
 
     def _move(self):
         self.player.move(self.deltatime)
+
+        for ghost in self.ghosts:
+            ghost.move(self.deltatime)
 
     def _draw(self):
         DISPLAY_SURFACE.fill((0, 0, 0))
 
         self.tilemap.draw(DISPLAY_SURFACE)
         self.player.draw(DISPLAY_SURFACE)
+
+        for ghost in self.ghosts:
+            ghost.draw(DISPLAY_SURFACE)
 
         pygame.display.update()
 
@@ -38,6 +43,11 @@ class Game:
             self._move()
             self._draw()
             self.deltatime = pygame.time.Clock().tick(FPS) / 1000
+
+    def _load_start_position(self, tile):
+        position = np.where(self.tilemap.map == tile.value)
+        self.tilemap.set_tile(position[1][0], position[0][0], Tile.AIR)
+        return position[1][0] * self.tilemap.tile_size, position[0][0] * self.tilemap.tile_size
 
     @staticmethod
     def handle_events():

@@ -1,25 +1,29 @@
 import pygame
 
-from pygame.locals import *
-
 from main import SCREEN_WIDTH, load_image
 from tile import Tile
 
 
-class Pacman(pygame.sprite.Sprite):
+class Ghost(pygame.sprite.Sprite):
     speed = 200
     sprite_scale = 2
-    spritesheet = load_image("./images/pacman.png", sprite_scale)
-    sprite_size = sprite_scale * 13
-    animation_frame_length_ms = 60
-    transparent_tiles = [Tile.AIR, Tile.SMALL_DOT, Tile.BIG_DOT]
+    spritesheet = load_image("./images/ghosts.png", sprite_scale)
+    sprite_size = sprite_scale * 14
+
+    eye_size = (sprite_scale * 4, sprite_scale * 5)
+    eye_image = spritesheet.subsurface(pygame.Rect(sprite_size * 4, 0, *eye_size))
+
+    pupil_size = (sprite_scale * 2, sprite_scale * 2)
+    pupil_image = spritesheet.subsurface(pygame.Rect(sprite_size * 4, eye_size[1], *pupil_size))
+
+    transparent_tiles = [Tile.AIR, Tile.SMALL_DOT, Tile.BIG_DOT, Tile.GHOST_GATE]
 
     def __init__(self, start_pos=(0, 0), tilemap=None):
         super().__init__()
-        self.start_pos = (start_pos[0] + 2 * Pacman.sprite_scale, start_pos[1] - 2 * Pacman.sprite_scale)
-        self.rect = pygame.Rect(0, 0, Pacman.sprite_size, Pacman.sprite_size)
+        self.start_pos = (start_pos[0] + 2 * Ghost.sprite_scale, start_pos[1] - 2 * Ghost.sprite_scale)
+        self.rect = pygame.Rect(0, 0, Ghost.sprite_size, Ghost.sprite_size)
         self.image_rect = self.rect.copy()
-        self.image = Pacman.spritesheet.subsurface(self.image_rect)
+        self.image = Ghost.spritesheet.subsurface(self.image_rect)
         self.velocity = (0, 0)
         self.last_frame_update_time = 0
         self.rect.move_ip(*self.start_pos)
@@ -27,35 +31,47 @@ class Pacman(pygame.sprite.Sprite):
         self.queued_velocity = (0, 0)
 
     def draw(self, surface):
-        ticks = pygame.time.get_ticks()
-
-        # make pacman be closed when not moving
-        if self.velocity == (0, 0):
-            self.image_rect.left = 0
-            self.image = Pacman.spritesheet.subsurface(self.image_rect)
-            self.last_frame_update_time = ticks
-
-        if (ticks - self.last_frame_update_time) >= self.animation_frame_length_ms:
-            self.image_rect.left = (self.image_rect.left + Pacman.sprite_size) % Pacman.spritesheet.get_width()
-            self.image = Pacman.spritesheet.subsurface(self.image_rect)
-            self.last_frame_update_time = ticks
-
-            if self.velocity == (0, -self.speed):
-                self.image = pygame.transform.rotate(self.image, -90)
-            elif self.velocity == (0, self.speed):
-                self.image = pygame.transform.rotate(self.image, 90)
-            elif self.velocity == (self.speed, 0):
-                self.image = pygame.transform.rotate(self.image, 180)
-
         surface.blit(self.image, self.rect)
+
+        # draw eyes
+        surface.blit(
+            Ghost.eye_image,
+            pygame.Rect(
+                self.rect.centerx - Ghost.eye_size[0] - Ghost.sprite_scale,
+                self.rect.y + 3 * Ghost.sprite_scale,
+                *Ghost.eye_size)
+        )
+        surface.blit(
+            Ghost.eye_image,
+            pygame.Rect(
+                self.rect.centerx + Ghost.sprite_scale,
+                self.rect.y + 3 * Ghost.sprite_scale,
+                *Ghost.eye_size
+            )
+        )
+
+        # draw pupils
+        surface.blit(
+            Ghost.pupil_image,
+            pygame.Rect(
+                self.rect.centerx - Ghost.eye_size[0] - Ghost.sprite_scale + Ghost.pupil_size[0],
+                self.rect.y + 3 * Ghost.sprite_scale + Ghost.pupil_size[0],
+                *Ghost.pupil_size)
+        )
+        surface.blit(
+            Ghost.pupil_image,
+            pygame.Rect(
+                self.rect.centerx + Ghost.sprite_scale + Ghost.pupil_size[0],
+                self.rect.y + 3 * Ghost.sprite_scale + Ghost.pupil_size[0],
+                *Ghost.pupil_size
+            )
+        )
 
     def move(self, deltatime):
         current_tile_x, current_tile_y = self._get_tile_coordinates(self.rect.centerx, self.rect.centery)
 
         # only allow input when player is on screen
         if self._is_in_bounds(current_tile_x, current_tile_y):
-            self._handle_input()
-
             queued_tile_x = int(current_tile_x + self.queued_velocity[0] / self.speed)
             queued_tile_y = int(current_tile_y + self.queued_velocity[1] / self.speed)
 
@@ -102,27 +118,12 @@ class Pacman(pygame.sprite.Sprite):
             return False
 
         if self._is_in_bounds(tile_x, tile_y):
-            return self.tilemap.get_tile(tile_x, tile_y) not in Pacman.transparent_tiles
+            return self.tilemap.get_tile(tile_x, tile_y) not in Ghost.transparent_tiles
 
         return False
 
     def _get_tile_coordinates(self, center_x, center_y):
         return int(center_x // self.tilemap.tile_size), int(center_y // self.tilemap.tile_size)
-
-    def _handle_input(self):
-        pressed_keys = pygame.key.get_pressed()
-
-        if pressed_keys[K_w]:
-            self.queued_velocity = (0, -self.speed)
-
-        if pressed_keys[K_a]:
-            self.queued_velocity = (-self.speed, 0)
-
-        if pressed_keys[K_s]:
-            self.queued_velocity = (0, self.speed)
-
-        if pressed_keys[K_d]:
-            self.queued_velocity = (self.speed, 0)
 
     def _realign(self, realign_x=True, realign_y=True):
         current_tile_x, current_tile_y = self._get_tile_coordinates(self.rect.centerx, self.rect.centery)

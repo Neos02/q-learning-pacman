@@ -7,7 +7,6 @@ from tile import Tile
 
 
 class Tilemap:
-    start_tile_id = -1
 
     def __init__(self, path, tileset, tile_size=16, rect=None):
         with open(path, 'r') as f:
@@ -27,7 +26,7 @@ class Tilemap:
 
         for i in range(m):
             for j in range(n):
-                if self.map[i, j] != Tilemap.start_tile_id:
+                if self.map[i, j] >= 0:
                     tile = self.tileset.tiles[self.map[i, j]]
                     self.image.blit(tile, (j * self.tile_size, i * self.tile_size))
 
