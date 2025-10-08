@@ -62,7 +62,10 @@ class Pacman(pygame.sprite.Sprite):
             if self._is_in_bounds(queued_tile_x, queued_tile_y) \
                     and self._get_tile(queued_tile_x, queued_tile_y) in Pacman.transparent_tiles:
                 self.velocity = self.queued_velocity
-                self._realign(self.velocity[0] == 0, self.velocity[1] == 0)
+                self._realign(
+                    self.velocity[0] == 0 and self.velocity[1] != 0,
+                    self.velocity[0] != 0 and self.velocity[1] == 0
+                )
 
         self._handle_collisions_and_update_position((
             self.rect.centerx + self.velocity[0] * deltatime,
