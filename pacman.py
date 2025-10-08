@@ -59,8 +59,7 @@ class Pacman(pygame.sprite.Sprite):
             queued_tile_x = int(current_tile_x + self.queued_velocity[0] / self.speed)
             queued_tile_y = int(current_tile_y + self.queued_velocity[1] / self.speed)
 
-            if self._is_in_bounds(queued_tile_x, queued_tile_y) \
-                    and self._get_tile(queued_tile_x, queued_tile_y) in Pacman.transparent_tiles:
+            if not self._has_collision(queued_tile_x, queued_tile_y):
                 self.velocity = self.queued_velocity
                 self._realign(
                     self.velocity[0] == 0 and self.velocity[1] != 0,
@@ -88,6 +87,11 @@ class Pacman(pygame.sprite.Sprite):
                 and not self._has_collision(next_tile_x, next_tile_y):
             self.rect.centerx = position[0]
             self.rect.centery = position[1]
+
+            if self.tilemap.get_tile(current_tile_x, current_tile_y) == Tile.SMALL_DOT:
+                self.tilemap.set_tile(current_tile_x, current_tile_y, Tile.AIR)
+            elif self.tilemap.get_tile(current_tile_x, current_tile_y) == Tile.BIG_DOT:
+                self.tilemap.set_tile(current_tile_x, current_tile_y, Tile.AIR)
         else:
             self._realign()
             self.velocity = (0, 0)
@@ -98,7 +102,7 @@ class Pacman(pygame.sprite.Sprite):
             return False
 
         if self._is_in_bounds(tile_x, tile_y):
-            return self._get_tile(tile_x, tile_y) not in Pacman.transparent_tiles
+            return self.tilemap.get_tile(tile_x, tile_y) not in Pacman.transparent_tiles
 
         return False
 
@@ -128,9 +132,6 @@ class Pacman(pygame.sprite.Sprite):
 
         if realign_y:
             self.rect.centery = current_tile_y * self.tilemap.tile_size + self.tilemap.tile_size / 2
-
-    def _get_tile(self, x, y):
-        return Tile(self.tilemap.map[y, x])
 
     def _is_in_bounds(self, tile_x, tile_y):
         h, w = self.tilemap.map.shape

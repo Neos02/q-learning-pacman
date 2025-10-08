@@ -3,6 +3,8 @@ import json
 import numpy as np
 import pygame
 
+from tile import Tile
+
 
 class Tilemap:
     start_tile_id = -1
@@ -28,3 +30,17 @@ class Tilemap:
                 if self.map[i, j] != Tilemap.start_tile_id:
                     tile = self.tileset.tiles[self.map[i, j]]
                     self.image.blit(tile, (j * self.tile_size, i * self.tile_size))
+
+    def get_tile(self, x, y):
+        h, w = self.map.shape
+
+        if 0 <= x < w and 0 <= y < h:
+            return Tile(self.map[y, x])
+
+        return Tile.AIR
+
+    def set_tile(self, x, y, tile):
+        h, w = self.map.shape
+
+        if 0 <= x < w and 0 <= y < h:
+            self.map[y, x] = tile.value
