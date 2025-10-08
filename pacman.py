@@ -58,8 +58,8 @@ class Pacman(pygame.sprite.Sprite):
             queued_tile_x = int(current_tile_x + self.queued_velocity[0] / self.speed)
             queued_tile_y = int(current_tile_y + self.queued_velocity[1] / self.speed)
 
-            if self._is_in_bounds(queued_tile_x, queued_tile_y) and \
-                    self._get_tile(queued_tile_x, queued_tile_y) in Pacman.transparent_tiles:
+            if self._is_in_bounds(queued_tile_x, queued_tile_y) \
+                    and self._get_tile(queued_tile_x, queued_tile_y) in Pacman.transparent_tiles:
                 self.velocity = self.queued_velocity
                 self._realign(self.velocity[0] == 0, self.velocity[1] == 0)
 
@@ -76,7 +76,12 @@ class Pacman(pygame.sprite.Sprite):
             self.rect.move_ip(-SCREEN_WIDTH - self.rect.width, 0)
 
     def _handle_collisions_and_update_position(self, position):
-        if not self._has_collision(position):
+        current_tile_x, current_tile_y = self._get_tile_coordinates(self.rect.centerx, self.rect.centery)
+        next_tile_x = int(current_tile_x + self.velocity[0] / self.speed)
+        next_tile_y = int(current_tile_y + self.velocity[1] / self.speed)
+
+        if not self._has_collision(current_tile_x, current_tile_y) \
+                and not self._has_collision(next_tile_x, next_tile_y):
             self.rect.centerx = position[0]
             self.rect.centery = position[1]
         else:
@@ -84,14 +89,12 @@ class Pacman(pygame.sprite.Sprite):
             self.velocity = (0, 0)
             self.queued_velocity = (0, 0)
 
-    def _has_collision(self, position):
+    def _has_collision(self, tile_x, tile_y):
         if self.tilemap is None:
             return False
 
-        current_tile_x, current_tile_y = self._get_tile_coordinates(position[0], position[1])
-
-        if self._is_in_bounds(current_tile_x, current_tile_y):
-            return self._get_tile(current_tile_x, current_tile_y) not in Pacman.transparent_tiles
+        if self._is_in_bounds(tile_x, tile_y):
+            return self._get_tile(tile_x, tile_y) not in Pacman.transparent_tiles
 
         return False
 
