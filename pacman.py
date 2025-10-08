@@ -3,6 +3,7 @@ import pygame
 from pygame.locals import *
 
 from main import SCREEN_WIDTH, load_image
+from tile import Tile
 
 
 class Pacman(pygame.sprite.Sprite):
@@ -47,18 +48,20 @@ class Pacman(pygame.sprite.Sprite):
 
     def move(self, deltatime):
         pressed_keys = pygame.key.get_pressed()
+        h, w = self.tilemap.map.shape
 
-        if pressed_keys[K_w]:
-            self.velocity = (0, -self.speed)
+        if 0 <= self.rect.centerx // self.tilemap.tile_size < w and 0 <= self.rect.centery // self.tilemap.tile_size < h:
+            if pressed_keys[K_w]:
+                self.velocity = (0, -self.speed)
 
-        if pressed_keys[K_a]:
-            self.velocity = (-self.speed, 0)
+            if pressed_keys[K_a]:
+                self.velocity = (-self.speed, 0)
 
-        if pressed_keys[K_s]:
-            self.velocity = (0, self.speed)
+            if pressed_keys[K_s]:
+                self.velocity = (0, self.speed)
 
-        if pressed_keys[K_d]:
-            self.velocity = (self.speed, 0)
+            if pressed_keys[K_d]:
+                self.velocity = (self.speed, 0)
 
         next_position = (self.rect.centerx + self.velocity[0] * deltatime,
                          self.rect.centery + self.velocity[1] * deltatime)
@@ -78,7 +81,12 @@ class Pacman(pygame.sprite.Sprite):
         if self.tilemap is None:
             return False
 
+        h, w = self.tilemap.map.shape
         player_x = int(next_position[0] // self.tilemap.tile_size)
         player_y = int(next_position[1] // self.tilemap.tile_size)
 
-        return self.tilemap.map[player_y, player_x] != 7
+        if player_y < 0 or player_y >= h or player_x < 0 or player_x >= w:
+            return False
+
+        return Tile(self.tilemap.map[player_y, player_x]) not in [Tile.PLAYER_START, Tile.AIR, Tile.SMALL_DOT,
+                                                                  Tile.BIG_DOT]
