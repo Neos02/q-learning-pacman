@@ -37,19 +37,36 @@ class Ghost(pygame.sprite.Sprite):
     def draw(self, surface):
         surface.blit(self.image, self.rect)
 
+        eye_offset_x = 0
+        eye_offset_y = 0
+        pupil_offset_x = 0
+        pupil_offset_y = 0
+
+        if self.velocity[0] < 0:
+            eye_offset_x = -Ghost.sprite_scale
+            pupil_offset_x = -Ghost.sprite_scale
+            pupil_offset_y = -Ghost.sprite_scale
+        elif self.velocity[0] > 0:
+            eye_offset_x = Ghost.sprite_scale
+            pupil_offset_x = Ghost.sprite_scale
+            pupil_offset_y = -Ghost.sprite_scale
+        elif self.velocity[1] < 0:
+            eye_offset_y = -2 * Ghost.sprite_scale
+            pupil_offset_y = -3 * Ghost.sprite_scale
+
         # draw eyes
         surface.blit(
             Ghost.eye_image,
             pygame.Rect(
-                self.rect.centerx - Ghost.eye_size[0] - Ghost.sprite_scale,
-                self.rect.y + 3 * Ghost.sprite_scale,
+                self.rect.centerx - Ghost.eye_size[0] - Ghost.sprite_scale + eye_offset_x,
+                self.rect.y + 3 * Ghost.sprite_scale + eye_offset_y,
                 *Ghost.eye_size)
         )
         surface.blit(
             Ghost.eye_image,
             pygame.Rect(
-                self.rect.centerx + Ghost.sprite_scale,
-                self.rect.y + 3 * Ghost.sprite_scale,
+                self.rect.centerx + Ghost.sprite_scale + eye_offset_x,
+                self.rect.y + 3 * Ghost.sprite_scale + eye_offset_y,
                 *Ghost.eye_size
             )
         )
@@ -58,15 +75,16 @@ class Ghost(pygame.sprite.Sprite):
         surface.blit(
             Ghost.pupil_image,
             pygame.Rect(
-                self.rect.centerx - Ghost.eye_size[0] - Ghost.sprite_scale + Ghost.pupil_size[0],
-                self.rect.y + 3 * Ghost.sprite_scale + Ghost.pupil_size[0],
+                self.rect.centerx - Ghost.eye_size[0] - 2 * Ghost.sprite_scale + Ghost.pupil_size[
+                    0] + eye_offset_x + pupil_offset_x,
+                self.rect.y + 4 * Ghost.sprite_scale + Ghost.pupil_size[0] + eye_offset_y + pupil_offset_y,
                 *Ghost.pupil_size)
         )
         surface.blit(
             Ghost.pupil_image,
             pygame.Rect(
-                self.rect.centerx + Ghost.sprite_scale + Ghost.pupil_size[0],
-                self.rect.y + 3 * Ghost.sprite_scale + Ghost.pupil_size[0],
+                self.rect.centerx + Ghost.pupil_size[0] + eye_offset_x + pupil_offset_x,
+                self.rect.y + 4 * Ghost.sprite_scale + Ghost.pupil_size[0] + eye_offset_y + pupil_offset_y,
                 *Ghost.pupil_size
             )
         )
@@ -95,6 +113,7 @@ class Ghost(pygame.sprite.Sprite):
                 )
                 target_x, target_y = self._get_tile_coordinates(self.pacman.rect.centerx, self.pacman.rect.centery)
 
+                # TODO: replace with is_in_bounds
                 if 0 <= self.next_tile[0] < map_w and 0 <= self.next_tile[1] < map_h:
                     tile_choices = [
                         (
