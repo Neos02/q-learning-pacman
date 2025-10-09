@@ -88,61 +88,16 @@ class Ghost(Entity):
             self.rect.centery + self.velocity[1] * deltatime
         )
 
-        if self.next_tile is None or (current_tile_x, current_tile_y) == self.next_tile:
-            min_x = min(next_position[0], self.rect.centerx)
-            max_x = max(next_position[0], self.rect.centerx)
-            min_y = min(next_position[1], self.rect.centery)
-            max_y = max(next_position[1], self.rect.centery)
+        if self.next_tile is None or \
+                (current_tile_x, current_tile_y) == self.next_tile and self._can_move_to_position(next_position):
+            self.velocity = self.next_velocity
+            self.next_tile = (
+                int(current_tile_x + self.velocity[0] / self.speed) % map_w,
+                int(current_tile_y + self.velocity[1] / self.speed) % map_h
+            )
+            self._choose_next_direction()
 
-            if self.next_tile is None or \
-                    min_x <= (0.5 + self.next_tile[0]) * self.tilemap.tile_size <= max_x or \
-                    min_y <= (0.5 + self.next_tile[1]) * self.tilemap.tile_size <= max_y:
-                self.velocity = self.next_velocity
-                self.next_tile = (
-                    int(current_tile_x + self.velocity[0] / self.speed) % map_w,
-                    int(current_tile_y + self.velocity[1] / self.speed) % map_h
-                )
-
-                if self._is_in_ghost_house():
-                    target_x, target_y = self.tilemap.find_tile(Tile.GHOST_GATE)
-                else:
-                    target_x, target_y = self._get_tile_coordinates(self.pacman.rect.centerx, self.pacman.rect.centery)
-
-                if self._is_in_bounds(*self.next_tile):
-                    tile_choices = [
-                        (
-                            self.next_tile[0],
-                            self.next_tile[1] - 1
-                        ),
-                        (
-                            self.next_tile[0] - 1,
-                            self.next_tile[1]
-                        ),
-                        (
-                            self.next_tile[0],
-                            self.next_tile[1] + 1
-                        ),
-                        (
-                            self.next_tile[0] + 1,
-                            self.next_tile[1]
-                        )
-                    ]
-                    min_distance = math.inf
-
-                    for tile_coords in tile_choices:
-                        tile = self.tilemap.get_tile(*tile_coords)
-
-                        if (tile in self.transparent_tiles or self._is_in_ghost_house() and tile == Tile.GHOST_GATE) \
-                                and tile_coords != (current_tile_x, current_tile_y):
-                            distance = math.dist(tile_coords, (target_x, target_y))
-
-                            if distance < min_distance:
-                                min_distance = distance
-                                self.next_velocity = ((tile_coords[0] - self.next_tile[0]) * self.speed,
-                                                      (tile_coords[1] - self.next_tile[1]) * self.speed)
-
-        self.rect.centerx = next_position[0]
-        self.rect.centery = next_position[1]
+        self.rect.center = next_position
         self._realign(
             self.velocity[0] == 0 and self.velocity[1] != 0,
             self.velocity[0] != 0 and self.velocity[1] == 0
@@ -155,7 +110,61 @@ class Ghost(Entity):
         if self.rect.left > SCREEN_WIDTH:
             self.rect.move_ip(-SCREEN_WIDTH - self.rect.width, 0)
 
+    def _choose_target(self):
+        if self._is_in_ghost_house():
+            return self.tilemap.find_tile(Tile.GHOST_GATE)
+        else:
+            return self._get_tile_coordinates(self.pacman.rect.centerx, self.pacman.rect.centery)
+
+    def _can_move_to_position(self, position):
+        min_x = min(position[0], self.rect.centerx)
+        max_x = max(position[0], self.rect.centerx)
+        min_y = min(position[1], self.rect.centery)
+        max_y = max(position[1], self.rect.centery)
+
+        return self.next_tile is None or \
+            min_x <= (0.5 + self.next_tile[0]) * self.tilemap.tile_size <= max_x or \
+            min_y <= (0.5 + self.next_tile[1]) * self.tilemap.tile_size <= max_y
+
+    def _choose_next_direction(self):
+        if self._is_in_bounds(*self.next_tile):
+            tile_choices = [
+                (
+                    self.next_tile[0],
+                    self.next_tile[1] - 1
+                ),
+                (
+                    self.next_tile[0] - 1,
+                    self.next_tile[1]
+                ),
+                (
+                    self.next_tile[0],
+                    self.next_tile[1] + 1
+                ),
+                (
+                    self.next_tile[0] + 1,
+                    self.next_tile[1]
+                )
+            ]
+            min_distance = math.inf
+            current_tile_x, current_tile_y = self._get_tile_coordinates(self.rect.centerx, self.rect.centery)
+            target = self._choose_target()
+
+            for tile_coords in tile_choices:
+                tile = self.tilemap.get_tile(*tile_coords)
+
+                if self._is_transparent_tile(tile) and tile_coords != (current_tile_x, current_tile_y):
+                    distance = math.dist(tile_coords, target)
+
+                    if distance < min_distance:
+                        min_distance = distance
+                        self.next_velocity = ((tile_coords[0] - self.next_tile[0]) * self.speed,
+                                              (tile_coords[1] - self.next_tile[1]) * self.speed)
+
     def _is_in_ghost_house(self):
         return self.tilemap.get_tile(
             *self._get_tile_coordinates(self.rect.centerx, self.rect.centery)
         ) == Tile.GHOST_HOUSE
+
+    def _is_transparent_tile(self, tile):
+        return tile in self.transparent_tiles or self._is_in_ghost_house() and tile == Tile.GHOST_GATE
