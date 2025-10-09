@@ -1,13 +1,16 @@
+import math
 import sys
 import pygame
 import numpy as np
 
 from pygame.locals import *
 
-from entity import Entity
-from ghost import Ghost
+from blinky import Blinky
+from clyde import Clyde
+from inky import Inky
 from main import DISPLAY_SURFACE, FPS
 from pacman import Pacman
+from pinky import Pinky
 from tile import Tile
 from tilemap import Tilemap
 from tileset import Tileset
@@ -19,31 +22,12 @@ class Game:
         self.deltatime = 0
         self.tilemap = Tilemap("./maps/original.json", Tileset("./images/tileset.png"))
         self.player = Pacman(self.tilemap, self._load_start_position(Tile.PLAYER_START))
-        self.ghosts = [
-            Ghost(
-                self.player,
-                self.tilemap,
-                self._load_start_position(Tile.GHOST_START)
-            ),
-            Ghost(
-                self.player,
-                self.tilemap,
-                self._load_start_position(Tile.GHOST_START),
-                2 * Entity.sprite_scale * Ghost.sprite_size
-            ),
-            Ghost(
-                self.player,
-                self.tilemap,
-                self._load_start_position(Tile.GHOST_START),
-                Entity.sprite_scale * Ghost.sprite_size
-            ),
-            Ghost(
-                self.player,
-                self.tilemap,
-                self._load_start_position(Tile.GHOST_START),
-                3 * Entity.sprite_scale * Ghost.sprite_size
-            ),
-        ]
+
+        blinky = Blinky(self.player, self.tilemap, self._load_start_position(Tile.GHOST_START))
+        pinky = Pinky(self.player, self.tilemap, self._load_start_position(Tile.GHOST_START))
+        inky = Inky(blinky, self.player, self.tilemap, self._load_start_position(Tile.GHOST_START))
+        clyde = Clyde(self.player, self.tilemap, self._load_start_position(Tile.GHOST_START))
+        self.ghosts = [clyde, inky, pinky, blinky]
 
     def _move(self):
         self.player.move(self.deltatime)

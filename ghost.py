@@ -1,3 +1,4 @@
+import abc
 import math
 
 import pygame
@@ -8,6 +9,8 @@ from tile import Tile
 
 
 class Ghost(Entity):
+    abc.__metaclass__ = abc.ABCMeta
+
     spritesheet = load_image("./images/ghosts.png", Entity.sprite_scale)
     sprite_size = 14
 
@@ -114,7 +117,11 @@ class Ghost(Entity):
         if self._is_in_ghost_house():
             return self.tilemap.find_tile(Tile.GHOST_GATE)
         else:
-            return self._get_tile_coordinates(self.pacman.rect.centerx, self.pacman.rect.centery)
+            return self._target_pacman()
+
+    @abc.abstractmethod
+    def _target_pacman(self):
+        return
 
     def _can_move_to_position(self, position):
         min_x = min(position[0], self.rect.centerx)

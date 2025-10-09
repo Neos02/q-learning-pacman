@@ -2,6 +2,10 @@ from enum import Enum
 
 
 class Tile(Enum):
+    CLYDE_FIXED = -7
+    PINKY_FIXED = -6
+    INKY_FIXED = -5
+    BLINKY_FIXED = -4
     GHOST_HOUSE = -3
     GHOST_START = -2
     PLAYER_START = -1
