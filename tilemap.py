@@ -43,3 +43,7 @@ class Tilemap:
 
         if 0 <= x < w and 0 <= y < h:
             self.map[y, x] = tile.value
+
+    def find_tile(self, tile):
+        position = np.where(self.map == tile.value)
+        return position[1][0], position[0][0]

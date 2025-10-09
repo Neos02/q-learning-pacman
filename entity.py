@@ -1,8 +1,6 @@
 import pygame
 import abc
 
-from pygame.locals import *
-from main import SCREEN_WIDTH, load_image
 from tile import Tile
 
 
@@ -15,11 +13,12 @@ class Entity(pygame.sprite.Sprite):
     spritesheet = None
     transparent_tiles = [Tile.AIR, Tile.SMALL_DOT, Tile.BIG_DOT]
 
-    def __init__(self, tilemap, start_pos=(0, 0)):
+    def __init__(self, tilemap, start_pos=(0, 0), image_offset_left=0):
         super().__init__()
         self.scaled_sprite_size = self.sprite_size * self.sprite_scale
         self.rect = pygame.Rect(0, 0, self.scaled_sprite_size, self.scaled_sprite_size)
         self.image_rect = self.rect.copy()
+        self.image_rect.left = image_offset_left
         self.image = self.spritesheet.subsurface(self.image_rect)
         self.velocity = (0, 0)
         self.start_pos = (start_pos[0] + 2 * self.sprite_scale, start_pos[1] - 2 * self.sprite_scale)

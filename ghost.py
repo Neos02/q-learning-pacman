@@ -17,10 +17,10 @@ class Ghost(Entity):
     pupil_size = (2 * Entity.sprite_scale, 2 * Entity.sprite_scale)
     pupil_image = spritesheet.subsurface(pygame.Rect(sprite_size * Entity.sprite_scale * 4, eye_size[1], *pupil_size))
 
-    transparent_tiles = [Tile.AIR, Tile.SMALL_DOT, Tile.BIG_DOT]
+    transparent_tiles = [Tile.AIR, Tile.SMALL_DOT, Tile.BIG_DOT, Tile.GHOST_HOUSE]
 
-    def __init__(self, pacman, tilemap, start_pos=(0, 0)):
-        super().__init__(tilemap, start_pos)
+    def __init__(self, pacman, tilemap, start_pos=(0, 0), image_offset_left=0):
+        super().__init__(tilemap, start_pos, image_offset_left)
         self.pacman = pacman
         self.next_tile = None
         self.next_velocity = (-self.speed, 0)
@@ -102,7 +102,11 @@ class Ghost(Entity):
                     int(current_tile_x + self.velocity[0] / self.speed) % map_w,
                     int(current_tile_y + self.velocity[1] / self.speed) % map_h
                 )
-                target_x, target_y = self._get_tile_coordinates(self.pacman.rect.centerx, self.pacman.rect.centery)
+
+                if self._is_in_ghost_house():
+                    target_x, target_y = self.tilemap.find_tile(Tile.GHOST_GATE)
+                else:
+                    target_x, target_y = self._get_tile_coordinates(self.pacman.rect.centerx, self.pacman.rect.centery)
 
                 if self._is_in_bounds(*self.next_tile):
                     tile_choices = [
@@ -125,17 +129,17 @@ class Ghost(Entity):
                     ]
                     min_distance = math.inf
 
-                    for tile in tile_choices:
-                        if self.tilemap.get_tile(tile[0], tile[1]) not in self.transparent_tiles \
-                                or tile == (current_tile_x, current_tile_y):
-                            continue
+                    for tile_coords in tile_choices:
+                        tile = self.tilemap.get_tile(*tile_coords)
 
-                        distance = math.dist(tile, (target_x, target_y))
+                        if (tile in self.transparent_tiles or self._is_in_ghost_house() and tile == Tile.GHOST_GATE) \
+                                and tile_coords != (current_tile_x, current_tile_y):
+                            distance = math.dist(tile_coords, (target_x, target_y))
 
-                        if distance < min_distance:
-                            min_distance = distance
-                            self.next_velocity = ((tile[0] - self.next_tile[0]) * self.speed,
-                                                  (tile[1] - self.next_tile[1]) * self.speed)
+                            if distance < min_distance:
+                                min_distance = distance
+                                self.next_velocity = ((tile_coords[0] - self.next_tile[0]) * self.speed,
+                                                      (tile_coords[1] - self.next_tile[1]) * self.speed)
 
         self.rect.centerx = next_position[0]
         self.rect.centery = next_position[1]
@@ -150,3 +154,8 @@ class Ghost(Entity):
 
         if self.rect.left > SCREEN_WIDTH:
             self.rect.move_ip(-SCREEN_WIDTH - self.rect.width, 0)
+
+    def _is_in_ghost_house(self):
+        return self.tilemap.get_tile(
+            *self._get_tile_coordinates(self.rect.centerx, self.rect.centery)
+        ) == Tile.GHOST_HOUSE

@@ -2,6 +2,7 @@ from enum import Enum
 
 
 class Tile(Enum):
+    GHOST_HOUSE = -3
     GHOST_START = -2
     PLAYER_START = -1
     WALL_OUTER_TOP_LEFT_CORNER = 0
