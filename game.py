@@ -17,7 +17,7 @@ class Game:
     def __init__(self):
         self.deltatime = 0
         self.tilemap = Tilemap("./maps/original.json", Tileset("./images/tileset.png"))
-        self.player = Pacman(self._load_start_position(Tile.PLAYER_START), self.tilemap)
+        self.player = Pacman(self.tilemap, self._load_start_position(Tile.PLAYER_START))
         self.ghosts = [Ghost(self.player, self.tilemap, self._load_start_position(Tile.GHOST_START))]
 
     def _move(self):
