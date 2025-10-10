@@ -17,8 +17,8 @@ class Inky(Ghost):
         if self.pacman.velocity[1] < 0:
             target_tile_x -= 2
 
-        target_tile_x += 2 * self.pacman.velocity[0] / self.pacman.speed
-        target_tile_y += 2 * self.pacman.velocity[1] / self.pacman.speed
+        target_tile_x += 2 * self._get_direction(self.pacman.velocity[0])
+        target_tile_y += 2 * self._get_direction(self.pacman.velocity[1])
 
         target_tile_x += target_tile_x - blinky_tile_x
         target_tile_y += target_tile_y - blinky_tile_y

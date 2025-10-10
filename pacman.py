@@ -47,8 +47,8 @@ class Pacman(Entity):
         if self._is_in_bounds(current_tile_x, current_tile_y):
             self._handle_input()
 
-            queued_tile_x = int(current_tile_x + self.queued_velocity[0] / self.speed)
-            queued_tile_y = int(current_tile_y + self.queued_velocity[1] / self.speed)
+            queued_tile_x = int(current_tile_x + self._get_direction(self.queued_velocity[0]))
+            queued_tile_y = int(current_tile_y + self._get_direction(self.queued_velocity[1]))
 
             if not self._has_collision(queued_tile_x, queued_tile_y):
                 self.velocity = self.queued_velocity
@@ -71,8 +71,7 @@ class Pacman(Entity):
 
     def _handle_collisions_and_update_position(self, position):
         current_tile_x, current_tile_y = self._get_tile_coordinates(self.rect.centerx, self.rect.centery)
-        next_tile_x = int(current_tile_x + self.velocity[0] / self.speed)
-        next_tile_y = int(current_tile_y + self.velocity[1] / self.speed)
+        next_tile_x, next_tile_y = self._get_next_tile()
 
         if not self._has_collision(current_tile_x, current_tile_y) \
                 and not self._has_collision(next_tile_x, next_tile_y):

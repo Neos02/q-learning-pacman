@@ -20,7 +20,7 @@ class Ghost(Entity):
     pupil_size = (2 * Entity.sprite_scale, 2 * Entity.sprite_scale)
     pupil_image = spritesheet.subsurface(pygame.Rect(sprite_size * Entity.sprite_scale * 4, eye_size[1], *pupil_size))
 
-    transparent_tiles = [Tile.AIR, Tile.SMALL_DOT, Tile.BIG_DOT, Tile.GHOST_HOUSE]
+    transparent_tiles = [Tile.AIR, Tile.SMALL_DOT, Tile.BIG_DOT, Tile.GHOST_HOUSE, Tile.GHOST_SLOW]
 
     def __init__(self, pacman, tilemap, start_pos=(0, 0), image_offset_left=0):
         super().__init__(tilemap, start_pos, image_offset_left)
@@ -84,7 +84,6 @@ class Ghost(Entity):
         )
 
     def move(self, deltatime):
-        map_h, map_w = self.tilemap.map.shape
         current_tile_x, current_tile_y = self._get_tile_coordinates(self.rect.centerx, self.rect.centery)
         next_position = (
             self.rect.centerx + self.velocity[0] * deltatime,
@@ -94,10 +93,7 @@ class Ghost(Entity):
         if self.next_tile is None or \
                 (current_tile_x, current_tile_y) == self.next_tile and self._can_move_to_position(next_position):
             self.velocity = self.next_velocity
-            self.next_tile = (
-                int(current_tile_x + self.velocity[0] / self.speed) % map_w,
-                int(current_tile_y + self.velocity[1] / self.speed) % map_h
-            )
+            self.next_tile = self._get_next_tile()
             self._choose_next_direction()
 
         self.rect.center = next_position
@@ -161,12 +157,14 @@ class Ghost(Entity):
                 tile = self.tilemap.get_tile(*tile_coords)
 
                 if self._is_transparent_tile(tile) and tile_coords != (current_tile_x, current_tile_y):
+                    # print(tile)
                     distance = math.dist(tile_coords, target)
 
                     if distance < min_distance:
                         min_distance = distance
-                        self.next_velocity = ((tile_coords[0] - self.next_tile[0]) * self.speed,
-                                              (tile_coords[1] - self.next_tile[1]) * self.speed)
+                        velocity_scale_factor = 1 if tile != Tile.GHOST_SLOW else 0.4
+                        self.next_velocity = ((tile_coords[0] - self.next_tile[0]) * self.speed * velocity_scale_factor,
+                                              (tile_coords[1] - self.next_tile[1]) * self.speed * velocity_scale_factor)
 
     def _is_in_ghost_house(self):
         return self.tilemap.get_tile(

@@ -11,7 +11,7 @@ class Entity(pygame.sprite.Sprite):
     sprite_scale = 2
     sprite_size = 0
     spritesheet = None
-    transparent_tiles = [Tile.AIR, Tile.SMALL_DOT, Tile.BIG_DOT]
+    transparent_tiles = [Tile.AIR, Tile.SMALL_DOT, Tile.BIG_DOT, Tile.GHOST_SLOW]
 
     def __init__(self, tilemap, start_pos=(0, 0), image_offset_left=0):
         super().__init__()
@@ -48,3 +48,14 @@ class Entity(pygame.sprite.Sprite):
     def _is_in_bounds(self, tile_x, tile_y):
         h, w = self.tilemap.map.shape
         return 0 <= tile_x < w and 0 <= tile_y < h
+
+    def _get_next_tile(self):
+        direction_x, direction_y = self._get_direction(self.velocity[0]), self._get_direction(self.velocity[1])
+        current_tile_x, current_tile_y = self._get_tile_coordinates(self.rect.centerx, self.rect.centery)
+        map_h, map_w = self.tilemap.map.shape
+
+        return (current_tile_x + direction_x) % map_w, (current_tile_y + direction_y) % map_h
+
+    @staticmethod
+    def _get_direction(value):
+        return 1 if value > 0 else -1 if value < 0 else 0

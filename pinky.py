@@ -16,6 +16,6 @@ class Pinky(Ghost):
             target_tile_x -= 4
 
         return (
-            target_tile_x + 4 * self.pacman.velocity[0] / self.pacman.speed,
-            target_tile_y + 4 * self.pacman.velocity[1] / self.pacman.speed
+            target_tile_x + 4 * self._get_direction(self.pacman.velocity[0]),
+            target_tile_y + 4 * self._get_direction(self.pacman.velocity[1])
         )
