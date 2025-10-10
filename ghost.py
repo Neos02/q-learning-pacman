@@ -152,12 +152,13 @@ class Ghost(Entity):
             min_distance = math.inf
             current_tile_x, current_tile_y = self._get_tile_coordinates(self.rect.centerx, self.rect.centery)
             target = self._choose_target()
+            map_h, map_w = self.tilemap.map.shape
 
             for tile_coords in tile_choices:
                 tile = self.tilemap.get_tile(*tile_coords)
 
-                if self._is_transparent_tile(tile) and tile_coords != (current_tile_x, current_tile_y):
-                    # print(tile)
+                if (self._is_transparent_tile(tile) and (tile_coords[0] % map_w, tile_coords[1] % map_h) !=
+                        (current_tile_x % map_w, current_tile_y % map_h)):
                     distance = math.dist(tile_coords, target)
 
                     if distance < min_distance:
