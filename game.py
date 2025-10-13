@@ -16,12 +16,14 @@ from tileset import Tileset
 
 
 class Game:
+    dot_timer_max_value = 4
 
     def __init__(self):
         self.deltatime = 0
         self.tilemap = Tilemap("./maps/original.json", Tileset("./images/tileset.png"))
         self.pacman = Pacman(self, self._load_start_position(Tile.PLAYER_START))
         self.pellet_time_seconds = 0
+        self.dot_timer_seconds = self.dot_timer_max_value
 
         blinky = Blinky(self, self._load_start_position(Tile.GHOST_START))
         pinky = Pinky(self, self._load_start_position(Tile.GHOST_START))
@@ -45,6 +47,15 @@ class Game:
         if self.pellet_time_seconds <= 0:
             for ghost in self.ghosts:
                 ghost.frighened = False
+
+        self.dot_timer_seconds -= self.deltatime
+
+        if self.dot_timer_seconds <= 0:
+            for ghost in reversed(self.ghosts):
+                if ghost.is_in_ghost_house():
+                    ghost.dot_counter = ghost.dot_limit
+                    self.dot_timer_seconds = self.dot_timer_max_value
+                    break
 
     def _draw(self):
         DISPLAY_SURFACE.fill((0, 0, 0))
@@ -94,6 +105,8 @@ class Game:
             ghost.frighened = True
 
     def update_dot_counter(self):
+        self.dot_timer_seconds = self.dot_timer_max_value
+
         for ghost in reversed(self.ghosts):
             if ghost.is_in_ghost_house():
                 ghost.dot_counter += 1
