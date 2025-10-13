@@ -12,8 +12,8 @@ class Pacman(Entity):
     sprite_size = 13
     animation_frame_length_ms = 60
 
-    def __init__(self, tilemap, start_pos=(0, 0)):
-        super().__init__(tilemap, start_pos)
+    def __init__(self, game, start_pos=(0, 0)):
+        super().__init__(game, start_pos)
         self.last_frame_update_time = 0
         self.queued_velocity = (0, 0)
         self.freeze_frames = 0
@@ -81,11 +81,11 @@ class Pacman(Entity):
             self.rect.centerx = position[0]
             self.rect.centery = position[1]
 
-            if self.tilemap.get_tile(current_tile_x, current_tile_y) == Tile.SMALL_DOT:
-                self.tilemap.set_tile(current_tile_x, current_tile_y, Tile.AIR)
+            if self.game.tilemap.get_tile(current_tile_x, current_tile_y) == Tile.SMALL_DOT:
+                self.game.tilemap.set_tile(current_tile_x, current_tile_y, Tile.AIR)
                 self.freeze_frames = 1
-            elif self.tilemap.get_tile(current_tile_x, current_tile_y) == Tile.BIG_DOT:
-                self.tilemap.set_tile(current_tile_x, current_tile_y, Tile.AIR)
+            elif self.game.tilemap.get_tile(current_tile_x, current_tile_y) == Tile.BIG_DOT:
+                self.game.tilemap.set_tile(current_tile_x, current_tile_y, Tile.AIR)
                 self.freeze_frames = 3
         else:
             self._realign()
@@ -93,11 +93,11 @@ class Pacman(Entity):
             self.queued_velocity = (0, 0)
 
     def _has_collision(self, tile_x, tile_y):
-        if self.tilemap is None:
+        if self.game.tilemap is None:
             return False
 
         if self._is_in_bounds(tile_x, tile_y):
-            return self.tilemap.get_tile(tile_x, tile_y) not in self.transparent_tiles
+            return self.game.tilemap.get_tile(tile_x, tile_y) not in self.transparent_tiles
 
         return False
 

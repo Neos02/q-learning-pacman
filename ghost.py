@@ -27,9 +27,8 @@ class Ghost(Entity):
     tunnel_speed_multiplier = 0.5
     speed = Entity.sprite_scale * FPS * regular_speed_multiplier
 
-    def __init__(self, pacman, tilemap, start_pos=(0, 0), image_offset_left=0):
-        super().__init__(tilemap, start_pos, image_offset_left)
-        self.pacman = pacman
+    def __init__(self, game, start_pos=(0, 0), image_offset_left=0):
+        super().__init__(game, start_pos, image_offset_left)
         self.next_tile = None
         self.next_velocity = (-self.speed, 0)
 
@@ -116,7 +115,7 @@ class Ghost(Entity):
 
     def _choose_target(self):
         if self._is_in_ghost_house():
-            return self.tilemap.find_tile(Tile.GHOST_GATE)
+            return self.game.tilemap.find_tile(Tile.GHOST_GATE)
         else:
             return self._target_pacman()
 
@@ -131,8 +130,8 @@ class Ghost(Entity):
         max_y = max(position[1], self.rect.centery)
 
         return self.next_tile is None or \
-            min_x <= (0.5 + self.next_tile[0]) * self.tilemap.tile_size <= max_x or \
-            min_y <= (0.5 + self.next_tile[1]) * self.tilemap.tile_size <= max_y
+            min_x <= (0.5 + self.next_tile[0]) * self.game.tilemap.tile_size <= max_x or \
+            min_y <= (0.5 + self.next_tile[1]) * self.game.tilemap.tile_size <= max_y
 
     def _choose_next_direction(self):
         if self._is_in_bounds(*self.next_tile):
@@ -157,10 +156,10 @@ class Ghost(Entity):
             min_distance = math.inf
             current_tile_x, current_tile_y = self._get_tile_coordinates(self.rect.centerx, self.rect.centery)
             target = self._choose_target()
-            map_h, map_w = self.tilemap.map.shape
+            map_h, map_w = self.game.tilemap.map.shape
 
             for tile_coords in tile_choices:
-                tile = self.tilemap.get_tile(*tile_coords)
+                tile = self.game.tilemap.get_tile(*tile_coords)
 
                 if (self._is_transparent_tile(tile) and (tile_coords[0] % map_w, tile_coords[1] % map_h) !=
                         (current_tile_x % map_w, current_tile_y % map_h)):
@@ -173,7 +172,7 @@ class Ghost(Entity):
                                               (tile_coords[1] - self.next_tile[1]) * self.speed * velocity_scale_factor)
 
     def _is_in_ghost_house(self):
-        return self.tilemap.get_tile(
+        return self.game.tilemap.get_tile(
             *self._get_tile_coordinates(self.rect.centerx, self.rect.centery)
         ) == Tile.GHOST_HOUSE
 

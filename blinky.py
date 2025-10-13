@@ -3,8 +3,8 @@ from ghost import Ghost
 
 class Blinky(Ghost):
 
-    def __init__(self, pacman, tilemap, start_position=(0, 0)):
-        super().__init__(pacman, tilemap, start_position, 0)
+    def __init__(self, game, start_position=(0, 0)):
+        super().__init__(game, start_position, 0)
 
     def _target_pacman(self):
-        return self._get_tile_coordinates(*self.pacman.rect.center)
+        return self._get_tile_coordinates(*self.game.pacman.rect.center)

@@ -14,7 +14,7 @@ class Entity(pygame.sprite.Sprite):
     transparent_tiles = [Tile.AIR, Tile.SMALL_DOT, Tile.BIG_DOT, Tile.GHOST_SLOW]
     speed = sprite_scale * FPS
 
-    def __init__(self, tilemap, start_pos=(0, 0), image_offset_left=0):
+    def __init__(self, game, start_pos=(0, 0), image_offset_left=0):
         super().__init__()
         self.scaled_sprite_size = self.sprite_size * self.sprite_scale
         self.rect = pygame.Rect(0, 0, self.scaled_sprite_size, self.scaled_sprite_size)
@@ -24,7 +24,7 @@ class Entity(pygame.sprite.Sprite):
         self.velocity = (0, 0)
         self.start_pos = (start_pos[0] + 2 * self.sprite_scale, start_pos[1] - 2 * self.sprite_scale)
         self.rect.move_ip(*self.start_pos)
-        self.tilemap = tilemap
+        self.game = game
 
     @abc.abstractmethod
     def draw(self, surface):
@@ -35,25 +35,25 @@ class Entity(pygame.sprite.Sprite):
         return
 
     def _get_tile_coordinates(self, center_x, center_y):
-        return int(center_x // self.tilemap.tile_size), int(center_y // self.tilemap.tile_size)
+        return int(center_x // self.game.tilemap.tile_size), int(center_y // self.game.tilemap.tile_size)
 
     def _realign(self, realign_x=True, realign_y=True):
         current_tile_x, current_tile_y = self._get_tile_coordinates(self.rect.centerx, self.rect.centery)
 
         if realign_x:
-            self.rect.centerx = current_tile_x * self.tilemap.tile_size + self.tilemap.tile_size / 2
+            self.rect.centerx = current_tile_x * self.game.tilemap.tile_size + self.game.tilemap.tile_size / 2
 
         if realign_y:
-            self.rect.centery = current_tile_y * self.tilemap.tile_size + self.tilemap.tile_size / 2
+            self.rect.centery = current_tile_y * self.game.tilemap.tile_size + self.game.tilemap.tile_size / 2
 
     def _is_in_bounds(self, tile_x, tile_y):
-        h, w = self.tilemap.map.shape
+        h, w = self.game.tilemap.map.shape
         return 0 <= tile_x < w and 0 <= tile_y < h
 
     def _get_next_tile(self):
         direction_x, direction_y = self._get_direction(self.velocity[0]), self._get_direction(self.velocity[1])
         current_tile_x, current_tile_y = self._get_tile_coordinates(self.rect.centerx, self.rect.centery)
-        map_h, map_w = self.tilemap.map.shape
+        map_h, map_w = self.game.tilemap.map.shape
 
         return (current_tile_x + direction_x) % map_w, (current_tile_y + direction_y) % map_h
 

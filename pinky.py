@@ -6,16 +6,16 @@ from ghost import Ghost
 
 class Pinky(Ghost):
 
-    def __init__(self, pacman, tilemap, start_position=(0, 0)):
-        super().__init__(pacman, tilemap, start_position, Entity.sprite_scale * Ghost.sprite_size)
+    def __init__(self, game, start_position=(0, 0)):
+        super().__init__(game, start_position, Entity.sprite_scale * Ghost.sprite_size)
 
     def _target_pacman(self):
-        target_tile_x, target_tile_y = self._get_tile_coordinates(*self.pacman.rect.center)
+        target_tile_x, target_tile_y = self._get_tile_coordinates(*self.game.pacman.rect.center)
 
-        if self.pacman.velocity[1] < 0:
+        if self.game.pacman.velocity[1] < 0:
             target_tile_x -= 4
 
         return (
-            target_tile_x + 4 * self._get_direction(self.pacman.velocity[0]),
-            target_tile_y + 4 * self._get_direction(self.pacman.velocity[1])
+            target_tile_x + 4 * self._get_direction(self.game.pacman.velocity[0]),
+            target_tile_y + 4 * self._get_direction(self.game.pacman.velocity[1])
         )

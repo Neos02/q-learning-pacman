@@ -1,4 +1,3 @@
-import math
 import sys
 import pygame
 import numpy as np
@@ -21,16 +20,17 @@ class Game:
     def __init__(self):
         self.deltatime = 0
         self.tilemap = Tilemap("./maps/original.json", Tileset("./images/tileset.png"))
-        self.player = Pacman(self.tilemap, self._load_start_position(Tile.PLAYER_START))
+        self.pellet_time = 0
+        self.pacman = Pacman(self, self._load_start_position(Tile.PLAYER_START))
 
-        blinky = Blinky(self.player, self.tilemap, self._load_start_position(Tile.GHOST_START))
-        pinky = Pinky(self.player, self.tilemap, self._load_start_position(Tile.GHOST_START))
-        inky = Inky(blinky, self.player, self.tilemap, self._load_start_position(Tile.GHOST_START))
-        clyde = Clyde(self.player, self.tilemap, self._load_start_position(Tile.GHOST_START))
+        blinky = Blinky(self, self._load_start_position(Tile.GHOST_START))
+        pinky = Pinky(self, self._load_start_position(Tile.GHOST_START))
+        inky = Inky(blinky, self, self._load_start_position(Tile.GHOST_START))
+        clyde = Clyde(self, self._load_start_position(Tile.GHOST_START))
         self.ghosts = [clyde, inky, pinky, blinky]
 
     def _move(self):
-        self.player.move(self.deltatime)
+        self.pacman.move(self.deltatime)
 
         for ghost in self.ghosts:
             ghost.move(self.deltatime)
@@ -39,7 +39,7 @@ class Game:
         DISPLAY_SURFACE.fill((0, 0, 0))
 
         self.tilemap.draw(DISPLAY_SURFACE)
-        self.player.draw(DISPLAY_SURFACE)
+        self.pacman.draw(DISPLAY_SURFACE)
 
         for ghost in self.ghosts:
             ghost.draw(DISPLAY_SURFACE)
