@@ -92,7 +92,7 @@ class Pacman(Entity):
             elif self.game.tilemap.get_tile(current_tile_x, current_tile_y) == Tile.BIG_DOT:
                 self.game.tilemap.set_tile(current_tile_x, current_tile_y, Tile.AIR)
                 self.freeze_frames = 3
-                self.game.pellet_time_seconds = 6  # 6 seconds
+                self.game.enter_frightened_mode()
         else:
             self._realign()
             self.velocity = (0, 0)

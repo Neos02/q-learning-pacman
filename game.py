@@ -71,6 +71,12 @@ class Game:
 
         return tile_x * self.tilemap.tile_size, tile_y * self.tilemap.tile_size
 
+    def enter_frightened_mode(self):
+        self.pellet_time_seconds = 6
+
+        for ghost in self.ghosts:
+            ghost.next_velocity = (ghost.next_velocity[0] * -1, ghost.next_velocity[1] * -1)
+
     @staticmethod
     def handle_events():
         for event in pygame.event.get():
