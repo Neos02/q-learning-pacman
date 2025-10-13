@@ -7,4 +7,4 @@ class Blinky(Ghost):
         super().__init__(game, start_position, 0)
 
     def _target_pacman(self):
-        return self._get_tile_coordinates(*self.game.pacman.rect.center)
+        return self.get_tile_coordinates(*self.game.pacman.rect.center)

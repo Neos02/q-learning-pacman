@@ -10,7 +10,7 @@ class Pinky(Ghost):
         super().__init__(game, start_position, Entity.sprite_scale * Ghost.sprite_size)
 
     def _target_pacman(self):
-        target_tile_x, target_tile_y = self._get_tile_coordinates(*self.game.pacman.rect.center)
+        target_tile_x, target_tile_y = self.get_tile_coordinates(*self.game.pacman.rect.center)
 
         if self.game.pacman.velocity[1] < 0:
             target_tile_x -= 4

@@ -11,9 +11,9 @@ class Clyde(Ghost):
         super().__init__(game, start_position, 3 * Entity.sprite_scale * Ghost.sprite_size)
 
     def _target_pacman(self):
-        pacman_coords = self._get_tile_coordinates(*self.game.pacman.rect.center)
+        pacman_coords = self.get_tile_coordinates(*self.game.pacman.rect.center)
 
-        if math.dist(pacman_coords, self._get_tile_coordinates(*self.rect.center)) >= 8:
+        if math.dist(pacman_coords, self.get_tile_coordinates(*self.rect.center)) >= 8:
             return pacman_coords
 
         return self.game.tilemap.find_tile(Tile.CLYDE_FIXED)

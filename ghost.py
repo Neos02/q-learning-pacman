@@ -1,5 +1,6 @@
 import abc
 import math
+import random
 
 import pygame
 
@@ -38,7 +39,8 @@ class Ghost(Entity):
 
     def draw(self, surface):
         if self.game.pellet_time_seconds > 0:
-            return surface.blit(self.frightened_image, self.rect)
+            surface.blit(self.frightened_image, self.rect)
+            return
 
         surface.blit(self.image, self.rect)
 
@@ -95,7 +97,7 @@ class Ghost(Entity):
         )
 
     def move(self, deltatime):
-        current_tile_x, current_tile_y = self._get_tile_coordinates(self.rect.centerx, self.rect.centery)
+        current_tile_x, current_tile_y = self.get_tile_coordinates(self.rect.centerx, self.rect.centery)
         next_position = (
             self.rect.centerx + self.velocity[0] * deltatime,
             self.rect.centery + self.velocity[1] * deltatime
@@ -123,15 +125,17 @@ class Ghost(Entity):
         if self.rect.left > SCREEN_WIDTH:
             self.rect.move_ip(-SCREEN_WIDTH - self.rect.width, 0)
 
-    def _choose_target(self):
+    def _choose_target(self, tile_choices):
         if self._is_in_ghost_house():
             return self.game.tilemap.find_tile(Tile.GHOST_GATE)
+        elif self.game.pellet_time_seconds > 0:
+            return tile_choices[random.randint(0, len(tile_choices) - 1)]
         else:
             return self._target_pacman()
 
     @abc.abstractmethod
     def _target_pacman(self):
-        return
+        return 0, 0
 
     def _can_move_to_position(self, position):
         min_x = min(position[0], self.rect.centerx)
@@ -164,8 +168,8 @@ class Ghost(Entity):
                 )
             ]
             min_distance = math.inf
-            current_tile_x, current_tile_y = self._get_tile_coordinates(self.rect.centerx, self.rect.centery)
-            target = self._choose_target()
+            current_tile_x, current_tile_y = self.get_tile_coordinates(self.rect.centerx, self.rect.centery)
+            target = self._choose_target(tile_choices)
             map_h, map_w = self.game.tilemap.map.shape
 
             for tile_coords in tile_choices:
@@ -182,14 +186,14 @@ class Ghost(Entity):
 
     def _is_in_ghost_house(self):
         return self.game.tilemap.get_tile(
-            *self._get_tile_coordinates(self.rect.centerx, self.rect.centery)
+            *self.get_tile_coordinates(self.rect.centerx, self.rect.centery)
         ) == Tile.GHOST_HOUSE
 
     def _is_transparent_tile(self, tile):
         return tile in self.transparent_tiles or self._is_in_ghost_house() and tile == Tile.GHOST_GATE
 
     def _get_velocity_multiplier(self):
-        if self.game.tilemap.get_tile(*self._get_tile_coordinates(*self.rect.center)) == Tile.GHOST_SLOW:
+        if self.game.tilemap.get_tile(*self.get_tile_coordinates(*self.rect.center)) == Tile.GHOST_SLOW:
             return self.tunnel_speed_multiplier
 
         if self.game.pellet_time_seconds > 0:

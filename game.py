@@ -75,7 +75,13 @@ class Game:
         self.pellet_time_seconds = 6
 
         for ghost in self.ghosts:
-            ghost.next_velocity = (ghost.next_velocity[0] * -1, ghost.next_velocity[1] * -1)
+            temp = ghost.next_tile
+            current_tile = ghost.get_tile_coordinates(*ghost.rect.center)
+            ghost.next_tile = current_tile
+            ghost.next_velocity = (
+                (current_tile[0] - temp[0]) * ghost.speed,
+                (current_tile[1] - temp[1]) * ghost.speed,
+            )
 
     @staticmethod
     def handle_events():

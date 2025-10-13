@@ -44,7 +44,7 @@ class Pacman(Entity):
         surface.blit(self.image, self.rect)
 
     def move(self, deltatime):
-        current_tile_x, current_tile_y = self._get_tile_coordinates(self.rect.centerx, self.rect.centery)
+        current_tile_x, current_tile_y = self.get_tile_coordinates(self.rect.centerx, self.rect.centery)
 
         # only allow input when player is on screen
         if self._is_in_bounds(current_tile_x, current_tile_y):
@@ -78,7 +78,7 @@ class Pacman(Entity):
             self.rect.move_ip(-SCREEN_WIDTH - self.rect.width, 0)
 
     def _handle_collisions_and_update_position(self, position):
-        current_tile_x, current_tile_y = self._get_tile_coordinates(self.rect.centerx, self.rect.centery)
+        current_tile_x, current_tile_y = self.get_tile_coordinates(self.rect.centerx, self.rect.centery)
         next_tile_x, next_tile_y = self._get_next_tile()
 
         if not self._has_collision(current_tile_x, current_tile_y) \

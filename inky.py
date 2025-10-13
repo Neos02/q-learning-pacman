@@ -11,8 +11,8 @@ class Inky(Ghost):
         self.blinky = blinky
 
     def _target_pacman(self):
-        target_tile_x, target_tile_y = self._get_tile_coordinates(*self.game.pacman.rect.center)
-        blinky_tile_x, blinky_tile_y = self._get_tile_coordinates(*self.blinky.rect.center)
+        target_tile_x, target_tile_y = self.get_tile_coordinates(*self.game.pacman.rect.center)
+        blinky_tile_x, blinky_tile_y = self.get_tile_coordinates(*self.blinky.rect.center)
 
         if self.game.pacman.velocity[1] < 0:
             target_tile_x -= 2

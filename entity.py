@@ -38,11 +38,11 @@ class Entity(pygame.sprite.Sprite):
     def _get_velocity_multiplier(self):
         return
 
-    def _get_tile_coordinates(self, center_x, center_y):
+    def get_tile_coordinates(self, center_x, center_y):
         return int(center_x // self.game.tilemap.tile_size), int(center_y // self.game.tilemap.tile_size)
 
     def _realign(self, realign_x=True, realign_y=True):
-        current_tile_x, current_tile_y = self._get_tile_coordinates(self.rect.centerx, self.rect.centery)
+        current_tile_x, current_tile_y = self.get_tile_coordinates(self.rect.centerx, self.rect.centery)
 
         if realign_x:
             self.rect.centerx = current_tile_x * self.game.tilemap.tile_size + self.game.tilemap.tile_size / 2
@@ -56,7 +56,7 @@ class Entity(pygame.sprite.Sprite):
 
     def _get_next_tile(self):
         direction_x, direction_y = self._get_direction(self.velocity[0]), self._get_direction(self.velocity[1])
-        current_tile_x, current_tile_y = self._get_tile_coordinates(self.rect.centerx, self.rect.centery)
+        current_tile_x, current_tile_y = self.get_tile_coordinates(self.rect.centerx, self.rect.centery)
         map_h, map_w = self.game.tilemap.map.shape
 
         return (current_tile_x + direction_x) % map_w, (current_tile_y + direction_y) % map_h
