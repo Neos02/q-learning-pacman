@@ -26,18 +26,6 @@ class Entity(pygame.sprite.Sprite):
         self.rect.move_ip(*self.start_pos)
         self.game = game
 
-    @abc.abstractmethod
-    def draw(self, surface):
-        return
-
-    @abc.abstractmethod
-    def move(self, deltatime):
-        return
-
-    @abc.abstractmethod
-    def _get_velocity_multiplier(self):
-        return
-
     def get_tile_coordinates(self, center_x, center_y):
         return int(center_x // self.game.tilemap.tile_size), int(center_y // self.game.tilemap.tile_size)
 
@@ -60,6 +48,18 @@ class Entity(pygame.sprite.Sprite):
         map_h, map_w = self.game.tilemap.map.shape
 
         return (current_tile_x + direction_x) % map_w, (current_tile_y + direction_y) % map_h
+
+    @abc.abstractmethod
+    def draw(self, surface):
+        return
+
+    @abc.abstractmethod
+    def move(self, deltatime):
+        return
+
+    @abc.abstractmethod
+    def _get_speed_multiplier(self):
+        return 1
 
     @staticmethod
     def _get_direction(value):

@@ -31,11 +31,20 @@ class Game:
 
     def _move(self):
         self.pacman.move(self.deltatime)
+        pacman_tile = self.pacman.get_tile_coordinates(*self.pacman.rect.center)
 
         for ghost in self.ghosts:
             ghost.move(self.deltatime)
+            ghost_tile = ghost.get_tile_coordinates(*ghost.rect.center)
+
+            if self.pellet_time_seconds > 0 and ghost_tile == pacman_tile:
+                ghost.eaten = True
 
         self.pellet_time_seconds -= self.deltatime
+
+        if self.pellet_time_seconds <= 0:
+            for ghost in self.ghosts:
+                ghost.frighened = False
 
     def _draw(self):
         DISPLAY_SURFACE.fill((0, 0, 0))
@@ -82,6 +91,7 @@ class Game:
                 (current_tile[0] - temp[0]) * ghost.speed,
                 (current_tile[1] - temp[1]) * ghost.speed,
             )
+            ghost.frighened = True
 
     @staticmethod
     def handle_events():

@@ -55,8 +55,8 @@ class Pacman(Entity):
 
             if not self._has_collision(queued_tile_x, queued_tile_y):
                 self.velocity = (
-                    self.queued_velocity[0] * self._get_velocity_multiplier(),
-                    self.queued_velocity[1] * self._get_velocity_multiplier()
+                    self.queued_velocity[0] * self._get_speed_multiplier(),
+                    self.queued_velocity[1] * self._get_speed_multiplier()
                 )
                 self._realign(
                     self.velocity[0] == 0 and self.velocity[1] != 0,
@@ -122,7 +122,7 @@ class Pacman(Entity):
         if pressed_keys[K_d]:
             self.queued_velocity = (self.speed, 0)
 
-    def _get_velocity_multiplier(self):
+    def _get_speed_multiplier(self):
         if self.game.pellet_time_seconds > 0:
             return self.pellet_speed_multiplier
 

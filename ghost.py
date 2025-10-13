@@ -25,24 +25,28 @@ class Ghost(Entity):
         pygame.Rect(sprite_size * Entity.sprite_scale * 4, 0, sprite_size * Entity.sprite_scale,
                     sprite_size * Entity.sprite_scale))
 
-    transparent_tiles = [Tile.AIR, Tile.SMALL_DOT, Tile.BIG_DOT, Tile.GHOST_HOUSE, Tile.GHOST_SLOW]
+    transparent_tiles = [Tile.AIR, Tile.SMALL_DOT, Tile.BIG_DOT, Tile.GHOST_HOUSE, Tile.GHOST_SLOW, Tile.GHOST_HOME]
 
     regular_speed_multiplier = 0.9375
     frightened_speed_multiplier = 0.625
     tunnel_speed_multiplier = 0.5
-    speed = Entity.sprite_scale * FPS * regular_speed_multiplier
+    eaten_speed_multiplier = 2
+    speed = Entity.sprite_scale * FPS
 
     def __init__(self, game, start_pos=(0, 0), image_offset_left=0):
         super().__init__(game, start_pos, image_offset_left)
         self.next_tile = None
         self.next_velocity = (-self.speed, 0)
+        self.eaten = False
+        self.frighened = True
 
     def draw(self, surface):
-        if self.game.pellet_time_seconds > 0:
+        if not self.eaten and self.frighened:
             surface.blit(self.frightened_image, self.rect)
             return
 
-        surface.blit(self.image, self.rect)
+        if not self.eaten:
+            surface.blit(self.image, self.rect)
 
         eye_offset_x = 0
         eye_offset_y = 0
@@ -98,6 +102,11 @@ class Ghost(Entity):
 
     def move(self, deltatime):
         current_tile_x, current_tile_y = self.get_tile_coordinates(self.rect.centerx, self.rect.centery)
+
+        if self.game.tilemap.get_tile(current_tile_x, current_tile_y) == Tile.GHOST_HOME:
+            self.eaten = False
+            self.frighened = False
+
         next_position = (
             self.rect.centerx + self.velocity[0] * deltatime,
             self.rect.centery + self.velocity[1] * deltatime
@@ -106,8 +115,8 @@ class Ghost(Entity):
         if self.next_tile is None or \
                 (current_tile_x, current_tile_y) == self.next_tile and self._can_move_to_position(next_position):
             self.velocity = (
-                self.next_velocity[0] * self._get_velocity_multiplier(),
-                self.next_velocity[1] * self._get_velocity_multiplier()
+                self.next_velocity[0] * self._get_speed_multiplier(),
+                self.next_velocity[1] * self._get_speed_multiplier()
             )
             self.next_tile = self._get_next_tile()
             self._choose_next_direction()
@@ -126,16 +135,14 @@ class Ghost(Entity):
             self.rect.move_ip(-SCREEN_WIDTH - self.rect.width, 0)
 
     def _choose_target(self, tile_choices):
-        if self._is_in_ghost_house():
+        if self.eaten:
+            return self.game.tilemap.find_tile(Tile.GHOST_HOME)
+        elif self._is_in_ghost_house():
             return self.game.tilemap.find_tile(Tile.GHOST_GATE)
-        elif self.game.pellet_time_seconds > 0:
+        elif self.frighened > 0:
             return tile_choices[random.randint(0, len(tile_choices) - 1)]
         else:
             return self._target_pacman()
-
-    @abc.abstractmethod
-    def _target_pacman(self):
-        return 0, 0
 
     def _can_move_to_position(self, position):
         min_x = min(position[0], self.rect.centerx)
@@ -190,13 +197,20 @@ class Ghost(Entity):
         ) == Tile.GHOST_HOUSE
 
     def _is_transparent_tile(self, tile):
-        return tile in self.transparent_tiles or self._is_in_ghost_house() and tile == Tile.GHOST_GATE
+        return tile in self.transparent_tiles or (self._is_in_ghost_house() or self.eaten) and tile == Tile.GHOST_GATE
 
-    def _get_velocity_multiplier(self):
+    def _get_speed_multiplier(self):
+        if self.eaten:
+            return self.eaten_speed_multiplier
+
+        if self.frighened > 0:
+            return self.frightened_speed_multiplier
+
         if self.game.tilemap.get_tile(*self.get_tile_coordinates(*self.rect.center)) == Tile.GHOST_SLOW:
             return self.tunnel_speed_multiplier
 
-        if self.game.pellet_time_seconds > 0:
-            return self.frightened_speed_multiplier
-
         return self.regular_speed_multiplier
+
+    @abc.abstractmethod
+    def _target_pacman(self):
+        return 0, 0
