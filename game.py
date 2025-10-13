@@ -17,6 +17,7 @@ from tileset import Tileset
 
 class Game:
     dot_timer_max_value = 4
+    ghost_eaten_base_value = 200
 
     def __init__(self):
         self.deltatime = 0
@@ -24,6 +25,8 @@ class Game:
         self.pacman = Pacman(self, self._load_start_position(Tile.PLAYER_START))
         self.pellet_time_seconds = 0
         self.dot_timer_seconds = self.dot_timer_max_value
+        self.score = 0
+        self.ghost_eaten_points = self.ghost_eaten_base_value
 
         blinky = Blinky(self, self._load_start_position(Tile.GHOST_START))
         pinky = Pinky(self, self._load_start_position(Tile.GHOST_START))
@@ -39,12 +42,20 @@ class Game:
             ghost.move(self.deltatime)
             ghost_tile = ghost.get_tile_coordinates(*ghost.rect.center)
 
-            if ghost.frighened and ghost_tile == pacman_tile:
-                ghost.eaten = True
+            if ghost_tile == pacman_tile:
+                if ghost.frighened:
+                    if not ghost.eaten:
+                        ghost.eaten = True
+                        self.score += self.ghost_eaten_points
+                        self.ghost_eaten_points *= 2
+                else:
+                    self.game_over()
 
         self.pellet_time_seconds -= self.deltatime
 
         if self.pellet_time_seconds <= 0:
+            self.ghost_eaten_points = self.ghost_eaten_base_value
+
             for ghost in self.ghosts:
                 ghost.frighened = False
 
@@ -104,13 +115,25 @@ class Game:
             )
             ghost.frighened = True
 
-    def update_dot_counter(self):
+    def eat_small_dot(self, tile_x, tile_y):
+        self.tilemap.set_tile(tile_x, tile_y, Tile.AIR)
         self.dot_timer_seconds = self.dot_timer_max_value
+        self.score += 10
 
         for ghost in reversed(self.ghosts):
             if ghost.is_in_ghost_house():
                 ghost.dot_counter += 1
                 break
+
+    def eat_big_dot(self, tile_x, tile_y):
+        self.tilemap.set_tile(tile_x, tile_y, Tile.AIR)
+        self.enter_frightened_mode()
+        self.score += 50
+
+    def game_over(self):
+        print(self.score)
+        pygame.quit()
+        sys.exit()
 
     @staticmethod
     def handle_events():

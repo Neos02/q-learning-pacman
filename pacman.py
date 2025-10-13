@@ -87,13 +87,11 @@ class Pacman(Entity):
             self.rect.centery = position[1]
 
             if self.game.tilemap.get_tile(current_tile_x, current_tile_y) == Tile.SMALL_DOT:
-                self.game.tilemap.set_tile(current_tile_x, current_tile_y, Tile.AIR)
                 self.freeze_frames = 1
-                self.game.update_dot_counter()
+                self.game.eat_small_dot(current_tile_x, current_tile_y)
             elif self.game.tilemap.get_tile(current_tile_x, current_tile_y) == Tile.BIG_DOT:
-                self.game.tilemap.set_tile(current_tile_x, current_tile_y, Tile.AIR)
                 self.freeze_frames = 3
-                self.game.enter_frightened_mode()
+                self.game.eat_big_dot(current_tile_x, current_tile_y)
         else:
             self._realign()
             self.velocity = (0, 0)
