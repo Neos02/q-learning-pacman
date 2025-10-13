@@ -39,6 +39,8 @@ class Ghost(Entity):
         self.next_velocity = (-self.speed, 0)
         self.eaten = False
         self.frighened = True
+        self.dot_counter = 0
+        self.dot_limit = 0
 
     def draw(self, surface):
         if not self.eaten and self.frighened:
@@ -137,7 +139,7 @@ class Ghost(Entity):
     def _choose_target(self, tile_choices):
         if self.eaten:
             return self.game.tilemap.find_tile(Tile.GHOST_HOME)
-        elif self._is_in_ghost_house():
+        elif self.is_in_ghost_house():
             return self.game.tilemap.find_tile(Tile.GHOST_GATE)
         elif self.frighened > 0:
             return tile_choices[random.randint(0, len(tile_choices) - 1)]
@@ -191,13 +193,14 @@ class Ghost(Entity):
                         self.next_velocity = ((tile_coords[0] - self.next_tile[0]) * self.speed,
                                               (tile_coords[1] - self.next_tile[1]) * self.speed)
 
-    def _is_in_ghost_house(self):
+    def is_in_ghost_house(self):
         return self.game.tilemap.get_tile(
             *self.get_tile_coordinates(self.rect.centerx, self.rect.centery)
         ) == Tile.GHOST_HOUSE
 
     def _is_transparent_tile(self, tile):
-        return tile in self.transparent_tiles or (self._is_in_ghost_house() or self.eaten) and tile == Tile.GHOST_GATE
+        is_ghost_gate_transparent = self.is_in_ghost_house() and self.dot_counter >= self.dot_limit or self.eaten
+        return tile in self.transparent_tiles or is_ghost_gate_transparent and tile == Tile.GHOST_GATE
 
     def _get_speed_multiplier(self):
         if self.eaten:

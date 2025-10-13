@@ -93,6 +93,12 @@ class Game:
             )
             ghost.frighened = True
 
+    def update_dot_counter(self):
+        for ghost in reversed(self.ghosts):
+            if ghost.is_in_ghost_house():
+                ghost.dot_counter += 1
+                break
+
     @staticmethod
     def handle_events():
         for event in pygame.event.get():

@@ -9,6 +9,7 @@ class Inky(Ghost):
     def __init__(self, blinky, game, start_position=(0, 0)):
         super().__init__(game, start_position, 2 * Entity.sprite_scale * Ghost.sprite_size)
         self.blinky = blinky
+        self.dot_limit = 30
 
     def _target_pacman(self):
         target_tile_x, target_tile_y = self.get_tile_coordinates(*self.game.pacman.rect.center)

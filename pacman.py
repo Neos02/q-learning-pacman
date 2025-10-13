@@ -89,6 +89,7 @@ class Pacman(Entity):
             if self.game.tilemap.get_tile(current_tile_x, current_tile_y) == Tile.SMALL_DOT:
                 self.game.tilemap.set_tile(current_tile_x, current_tile_y, Tile.AIR)
                 self.freeze_frames = 1
+                self.game.update_dot_counter()
             elif self.game.tilemap.get_tile(current_tile_x, current_tile_y) == Tile.BIG_DOT:
                 self.game.tilemap.set_tile(current_tile_x, current_tile_y, Tile.AIR)
                 self.freeze_frames = 3
