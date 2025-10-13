@@ -15,10 +15,14 @@ class Ghost(Entity):
     sprite_size = 14
 
     eye_size = (4 * Entity.sprite_scale, 5 * Entity.sprite_scale)
-    eye_image = spritesheet.subsurface(pygame.Rect(sprite_size * Entity.sprite_scale * 4, 0, *eye_size))
+    eye_image = spritesheet.subsurface(pygame.Rect(sprite_size * Entity.sprite_scale * 5, 0, *eye_size))
 
     pupil_size = (2 * Entity.sprite_scale, 2 * Entity.sprite_scale)
-    pupil_image = spritesheet.subsurface(pygame.Rect(sprite_size * Entity.sprite_scale * 4, eye_size[1], *pupil_size))
+    pupil_image = spritesheet.subsurface(pygame.Rect(sprite_size * Entity.sprite_scale * 5, eye_size[1], *pupil_size))
+
+    frightened_image = spritesheet.subsurface(
+        pygame.Rect(sprite_size * Entity.sprite_scale * 4, 0, sprite_size * Entity.sprite_scale,
+                    sprite_size * Entity.sprite_scale))
 
     transparent_tiles = [Tile.AIR, Tile.SMALL_DOT, Tile.BIG_DOT, Tile.GHOST_HOUSE, Tile.GHOST_SLOW]
 
@@ -33,6 +37,9 @@ class Ghost(Entity):
         self.next_velocity = (-self.speed, 0)
 
     def draw(self, surface):
+        if self.game.pellet_time_seconds > 0:
+            return surface.blit(self.frightened_image, self.rect)
+
         surface.blit(self.image, self.rect)
 
         eye_offset_x = 0
