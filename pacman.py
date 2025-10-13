@@ -11,6 +11,8 @@ class Pacman(Entity):
     spritesheet = load_image("./images/pacman.png", Entity.sprite_scale)
     sprite_size = 13
     animation_frame_length_ms = 60
+    regular_speed_multiplier = 1
+    pellet_speed_multiplier = 1.125
 
     def __init__(self, game, start_pos=(0, 0)):
         super().__init__(game, start_pos)
@@ -32,11 +34,11 @@ class Pacman(Entity):
             self.image = self.spritesheet.subsurface(self.image_rect)
             self.last_frame_update_time = ticks
 
-            if self.velocity == (0, -self.speed):
+            if self._get_direction(self.velocity[1]) == -1:
                 self.image = pygame.transform.rotate(self.image, -90)
-            elif self.velocity == (0, self.speed):
+            elif self._get_direction(self.velocity[1]) == 1:
                 self.image = pygame.transform.rotate(self.image, 90)
-            elif self.velocity == (self.speed, 0):
+            elif self._get_direction(self.velocity[0]) == 1:
                 self.image = pygame.transform.rotate(self.image, 180)
 
         surface.blit(self.image, self.rect)
@@ -52,7 +54,10 @@ class Pacman(Entity):
             queued_tile_y = int(current_tile_y + self._get_direction(self.queued_velocity[1]))
 
             if not self._has_collision(queued_tile_x, queued_tile_y):
-                self.velocity = self.queued_velocity
+                self.velocity = (
+                    self.queued_velocity[0] * self._get_velocity_multiplier(),
+                    self.queued_velocity[1] * self._get_velocity_multiplier()
+                )
                 self._realign(
                     self.velocity[0] == 0 and self.velocity[1] != 0,
                     self.velocity[0] != 0 and self.velocity[1] == 0
@@ -87,6 +92,7 @@ class Pacman(Entity):
             elif self.game.tilemap.get_tile(current_tile_x, current_tile_y) == Tile.BIG_DOT:
                 self.game.tilemap.set_tile(current_tile_x, current_tile_y, Tile.AIR)
                 self.freeze_frames = 3
+                self.game.pellet_time_seconds = 6  # 6 seconds
         else:
             self._realign()
             self.velocity = (0, 0)
@@ -115,3 +121,9 @@ class Pacman(Entity):
 
         if pressed_keys[K_d]:
             self.queued_velocity = (self.speed, 0)
+
+    def _get_velocity_multiplier(self):
+        if self.game.pellet_time_seconds > 0:
+            return self.pellet_speed_multiplier
+
+        return self.regular_speed_multiplier

@@ -34,6 +34,10 @@ class Entity(pygame.sprite.Sprite):
     def move(self, deltatime):
         return
 
+    @abc.abstractmethod
+    def _get_velocity_multiplier(self):
+        return
+
     def _get_tile_coordinates(self, center_x, center_y):
         return int(center_x // self.game.tilemap.tile_size), int(center_y // self.game.tilemap.tile_size)
 

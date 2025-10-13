@@ -20,8 +20,8 @@ class Game:
     def __init__(self):
         self.deltatime = 0
         self.tilemap = Tilemap("./maps/original.json", Tileset("./images/tileset.png"))
-        self.pellet_time = 0
         self.pacman = Pacman(self, self._load_start_position(Tile.PLAYER_START))
+        self.pellet_time_seconds = 0
 
         blinky = Blinky(self, self._load_start_position(Tile.GHOST_START))
         pinky = Pinky(self, self._load_start_position(Tile.GHOST_START))
@@ -34,6 +34,8 @@ class Game:
 
         for ghost in self.ghosts:
             ghost.move(self.deltatime)
+
+        self.pellet_time_seconds -= self.deltatime
 
     def _draw(self):
         DISPLAY_SURFACE.fill((0, 0, 0))

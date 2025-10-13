@@ -96,7 +96,10 @@ class Ghost(Entity):
 
         if self.next_tile is None or \
                 (current_tile_x, current_tile_y) == self.next_tile and self._can_move_to_position(next_position):
-            self.velocity = self.next_velocity
+            self.velocity = (
+                self.next_velocity[0] * self._get_velocity_multiplier(),
+                self.next_velocity[1] * self._get_velocity_multiplier()
+            )
             self.next_tile = self._get_next_tile()
             self._choose_next_direction()
 
@@ -167,9 +170,8 @@ class Ghost(Entity):
 
                     if distance < min_distance:
                         min_distance = distance
-                        velocity_scale_factor = self.regular_speed_multiplier if tile != Tile.GHOST_SLOW else self.tunnel_speed_multiplier
-                        self.next_velocity = ((tile_coords[0] - self.next_tile[0]) * self.speed * velocity_scale_factor,
-                                              (tile_coords[1] - self.next_tile[1]) * self.speed * velocity_scale_factor)
+                        self.next_velocity = ((tile_coords[0] - self.next_tile[0]) * self.speed,
+                                              (tile_coords[1] - self.next_tile[1]) * self.speed)
 
     def _is_in_ghost_house(self):
         return self.game.tilemap.get_tile(
@@ -178,3 +180,12 @@ class Ghost(Entity):
 
     def _is_transparent_tile(self, tile):
         return tile in self.transparent_tiles or self._is_in_ghost_house() and tile == Tile.GHOST_GATE
+
+    def _get_velocity_multiplier(self):
+        if self.game.tilemap.get_tile(*self._get_tile_coordinates(*self.rect.center)) == Tile.GHOST_SLOW:
+            return self.tunnel_speed_multiplier
+
+        if self.game.pellet_time_seconds > 0:
+            return self.frightened_speed_multiplier
+
+        return self.regular_speed_multiplier
