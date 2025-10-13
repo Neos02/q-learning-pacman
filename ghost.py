@@ -4,7 +4,7 @@ import math
 import pygame
 
 from entity import Entity
-from main import SCREEN_WIDTH, load_image
+from main import SCREEN_WIDTH, load_image, FPS
 from tile import Tile
 
 
@@ -21,6 +21,11 @@ class Ghost(Entity):
     pupil_image = spritesheet.subsurface(pygame.Rect(sprite_size * Entity.sprite_scale * 4, eye_size[1], *pupil_size))
 
     transparent_tiles = [Tile.AIR, Tile.SMALL_DOT, Tile.BIG_DOT, Tile.GHOST_HOUSE, Tile.GHOST_SLOW]
+
+    regular_speed_multiplier = 0.9375
+    frightened_speed_multiplier = 0.625
+    tunnel_speed_multiplier = 0.5
+    speed = Entity.sprite_scale * FPS * regular_speed_multiplier
 
     def __init__(self, pacman, tilemap, start_pos=(0, 0), image_offset_left=0):
         super().__init__(tilemap, start_pos, image_offset_left)
@@ -163,7 +168,7 @@ class Ghost(Entity):
 
                     if distance < min_distance:
                         min_distance = distance
-                        velocity_scale_factor = 1 if tile != Tile.GHOST_SLOW else 0.4
+                        velocity_scale_factor = self.regular_speed_multiplier if tile != Tile.GHOST_SLOW else self.tunnel_speed_multiplier
                         self.next_velocity = ((tile_coords[0] - self.next_tile[0]) * self.speed * velocity_scale_factor,
                                               (tile_coords[1] - self.next_tile[1]) * self.speed * velocity_scale_factor)
 

@@ -1,17 +1,18 @@
 import pygame
 import abc
 
+from main import FPS
 from tile import Tile
 
 
 class Entity(pygame.sprite.Sprite):
     __metaclass__ = abc.ABCMeta
 
-    speed = 200
     sprite_scale = 2
     sprite_size = 0
     spritesheet = None
     transparent_tiles = [Tile.AIR, Tile.SMALL_DOT, Tile.BIG_DOT, Tile.GHOST_SLOW]
+    speed = sprite_scale * FPS
 
     def __init__(self, tilemap, start_pos=(0, 0), image_offset_left=0):
         super().__init__()

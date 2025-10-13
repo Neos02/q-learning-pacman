@@ -16,6 +16,7 @@ class Pacman(Entity):
         super().__init__(tilemap, start_pos)
         self.last_frame_update_time = 0
         self.queued_velocity = (0, 0)
+        self.freeze_frames = 0
 
     def draw(self, surface):
         ticks = pygame.time.get_ticks()
@@ -56,11 +57,13 @@ class Pacman(Entity):
                     self.velocity[0] == 0 and self.velocity[1] != 0,
                     self.velocity[0] != 0 and self.velocity[1] == 0
                 )
-
-        self._handle_collisions_and_update_position((
-            self.rect.centerx + self.velocity[0] * deltatime,
-            self.rect.centery + self.velocity[1] * deltatime
-        ))
+        if self.freeze_frames > 0:
+            self.freeze_frames -= 1
+        else:
+            self._handle_collisions_and_update_position((
+                self.rect.centerx + self.velocity[0] * deltatime,
+                self.rect.centery + self.velocity[1] * deltatime
+            ))
 
         # wrap when off the screen horizontally
         if self.rect.right < 0:
@@ -80,8 +83,10 @@ class Pacman(Entity):
 
             if self.tilemap.get_tile(current_tile_x, current_tile_y) == Tile.SMALL_DOT:
                 self.tilemap.set_tile(current_tile_x, current_tile_y, Tile.AIR)
+                self.freeze_frames = 1
             elif self.tilemap.get_tile(current_tile_x, current_tile_y) == Tile.BIG_DOT:
                 self.tilemap.set_tile(current_tile_x, current_tile_y, Tile.AIR)
+                self.freeze_frames = 3
         else:
             self._realign()
             self.velocity = (0, 0)
