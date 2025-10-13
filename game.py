@@ -39,7 +39,7 @@ class Game:
             ghost.move(self.deltatime)
             ghost_tile = ghost.get_tile_coordinates(*ghost.rect.center)
 
-            if self.pellet_time_seconds > 0 and ghost_tile == pacman_tile:
+            if ghost.frighened and ghost_tile == pacman_tile:
                 ghost.eaten = True
 
         self.pellet_time_seconds -= self.deltatime
