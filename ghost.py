@@ -41,6 +41,7 @@ class Ghost(Entity):
         self.dot_limit = 0
         self.flash_time = 0
         self.reverse_direction = False
+        self.is_released = False
 
     def draw(self, surface):
         ticks = pygame.time.get_ticks()
@@ -121,7 +122,10 @@ class Ghost(Entity):
         )
 
     def move(self, deltatime):
-        if self.dot_counter < self.dot_limit:
+        if self.dot_counter == self.dot_limit:
+            self.is_released = True
+
+        if not self.is_released:
             return
 
         current_tile = self.get_tile_coordinates(self.rect.centerx, self.rect.centery)
@@ -225,10 +229,10 @@ class Ghost(Entity):
     def is_in_ghost_house(self):
         return self.game.tilemap.get_tile(
             *self.get_tile_coordinates(self.rect.centerx, self.rect.centery)
-        ) == Tile.GHOST_HOUSE
+        ) in [Tile.GHOST_HOUSE, Tile.GHOST_GATE]
 
     def _is_transparent_tile(self, tile, tile_x, tile_y):
-        is_ghost_gate_transparent = self.is_in_ghost_house() and self.dot_counter >= self.dot_limit or self.eaten
+        is_ghost_gate_transparent = self.is_in_ghost_house() and self.is_released or self.eaten
         current_tile_x, current_tile_y = self.get_tile_coordinates(*self.rect.center)
 
         return tile in self.transparent_tiles \

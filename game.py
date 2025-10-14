@@ -70,7 +70,7 @@ class Game:
         if self.dot_timer_seconds <= 0:
             for ghost in reversed(self.ghosts):
                 if ghost.is_in_ghost_house():
-                    ghost.dot_counter = ghost.dot_limit
+                    ghost.is_released = True
                     self.dot_timer_seconds = self.dot_timer_max_value
                     break
 

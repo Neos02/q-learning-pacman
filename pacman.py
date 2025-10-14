@@ -86,13 +86,14 @@ class Pacman(Entity):
             self.rect.centerx = position[0]
             self.rect.centery = position[1]
             tile = self.game.tilemap.get_tile(current_tile_x, current_tile_y)
-
-            if tile == Tile.SMALL_DOT or tile == Tile.GHOST_NO_UPWARD_TURN_DOT:
-                self.freeze_frames = 1
-                self.game.eat_small_dot(current_tile_x, current_tile_y)
-            elif tile == Tile.BIG_DOT:
-                self.freeze_frames = 3
-                self.game.eat_big_dot(current_tile_x, current_tile_y)
+            
+            if self.velocity != (0, 0):
+                if tile == Tile.SMALL_DOT or tile == Tile.GHOST_NO_UPWARD_TURN_DOT:
+                    self.freeze_frames = 1
+                    self.game.eat_small_dot(current_tile_x, current_tile_y)
+                elif tile == Tile.BIG_DOT:
+                    self.freeze_frames = 3
+                    self.game.eat_big_dot(current_tile_x, current_tile_y)
         else:
             self._realign()
             self.velocity = (0, 0)
