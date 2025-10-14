@@ -8,7 +8,7 @@ from tile import Tile
 
 class Tilemap:
 
-    def __init__(self, path, tileset, tile_size=16, rect=None):
+    def __init__(self, path, tileset, tile_size=8, rect=None):
         with open(path, 'r') as f:
             self.map = np.array(json.load(f))
 

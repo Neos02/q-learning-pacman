@@ -6,7 +6,7 @@ from tile import Tile
 
 class Tileset:
 
-    def __init__(self, path, size=(16, 16), margin=0, spacing=0):
+    def __init__(self, path, size=(8, 8), margin=0, spacing=0):
         self.path = path
         self.size = size
         self.margin = margin

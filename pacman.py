@@ -8,7 +8,7 @@ from tile import Tile
 
 
 class Pacman(Entity):
-    spritesheet = load_image("./images/pacman.png", Entity.sprite_scale)
+    spritesheet = load_image("./images/pacman.png")
     sprite_size = 13
     regular_speed_multiplier = 1
     pellet_speed_multiplier = 1.125
@@ -30,7 +30,7 @@ class Pacman(Entity):
             self.last_frame_update_time = ticks
 
         if (ticks - self.last_frame_update_time) >= self.animation_frame_length_ms:
-            self.image_rect.left = (self.image_rect.left + self.scaled_sprite_size) % self.spritesheet.get_width()
+            self.image_rect.left = (self.image_rect.left + self.sprite_size) % self.spritesheet.get_width()
             self.image = self.spritesheet.subsurface(self.image_rect)
             self.last_frame_update_time = ticks
 
@@ -86,7 +86,7 @@ class Pacman(Entity):
             self.rect.centerx = position[0]
             self.rect.centery = position[1]
             tile = self.game.tilemap.get_tile(current_tile_x, current_tile_y)
-            
+
             if self.velocity != (0, 0):
                 if tile == Tile.SMALL_DOT or tile == Tile.GHOST_NO_UPWARD_TURN_DOT:
                     self.freeze_frames = 1

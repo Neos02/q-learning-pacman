@@ -12,14 +12,14 @@ from tile import Tile
 class Ghost(Entity):
     abc.__metaclass__ = abc.ABCMeta
 
-    spritesheet = load_image("./images/ghosts.png", Entity.sprite_scale)
+    spritesheet = load_image("./images/ghosts.png")
     sprite_size = 14
 
-    eye_size = (4 * Entity.sprite_scale, 5 * Entity.sprite_scale)
-    eye_image = spritesheet.subsurface(pygame.Rect(sprite_size * Entity.sprite_scale * 6, 0, *eye_size))
+    eye_size = (4, 5)
+    eye_image = spritesheet.subsurface(pygame.Rect(sprite_size * 6, 0, *eye_size))
 
-    pupil_size = (2 * Entity.sprite_scale, 2 * Entity.sprite_scale)
-    pupil_image = spritesheet.subsurface(pygame.Rect(sprite_size * Entity.sprite_scale * 6, eye_size[1], *pupil_size))
+    pupil_size = (2, 2)
+    pupil_image = spritesheet.subsurface(pygame.Rect(sprite_size * 6, eye_size[1], *pupil_size))
 
     transparent_tiles = [Tile.AIR, Tile.SMALL_DOT, Tile.BIG_DOT, Tile.GHOST_HOUSE, Tile.GHOST_SLOW, Tile.GHOST_HOME]
 
@@ -27,7 +27,7 @@ class Ghost(Entity):
     frightened_speed_multiplier = 0.625
     tunnel_speed_multiplier = 0.5
     eaten_speed_multiplier = 2
-    speed = Entity.sprite_scale * FPS
+    speed = FPS
     animation_frame_length_ms = 120
     flash_speed_ms = 300
 
@@ -47,7 +47,7 @@ class Ghost(Entity):
         ticks = pygame.time.get_ticks()
 
         if (ticks - self.last_frame_update_time) >= self.animation_frame_length_ms:
-            self.image_rect.top = (self.image_rect.top + self.scaled_sprite_size) % self.spritesheet.get_height()
+            self.image_rect.top = (self.image_rect.top + self.sprite_size) % self.spritesheet.get_height()
             self.image = self.spritesheet.subsurface(self.image_rect)
             self.last_frame_update_time = ticks
 
@@ -56,10 +56,10 @@ class Ghost(Entity):
 
             frightened_image = self.spritesheet.subsurface(
                 pygame.Rect(
-                    self.sprite_size * Entity.sprite_scale * (5 if is_flash else 4),
+                    self.sprite_size * (5 if is_flash else 4),
                     self.image_rect.top,
-                    self.sprite_size * Entity.sprite_scale,
-                    self.sprite_size * Entity.sprite_scale
+                    self.sprite_size,
+                    self.sprite_size
                 )
             )
 
@@ -75,30 +75,30 @@ class Ghost(Entity):
         pupil_offset_y = 0
 
         if self.velocity[0] < 0:
-            eye_offset_x = -self.sprite_scale
-            pupil_offset_x = -self.sprite_scale
-            pupil_offset_y = -self.sprite_scale
+            eye_offset_x = -1
+            pupil_offset_x = -1
+            pupil_offset_y = -1
         elif self.velocity[0] > 0:
-            eye_offset_x = self.sprite_scale
-            pupil_offset_x = self.sprite_scale
-            pupil_offset_y = -self.sprite_scale
+            eye_offset_x = 1
+            pupil_offset_x = 1
+            pupil_offset_y = -1
         elif self.velocity[1] < 0:
-            eye_offset_y = -2 * self.sprite_scale
-            pupil_offset_y = -3 * self.sprite_scale
+            eye_offset_y = -2
+            pupil_offset_y = -3
 
         # draw eyes
         surface.blit(
             self.eye_image,
             pygame.Rect(
-                self.rect.centerx - self.eye_size[0] - self.sprite_scale + eye_offset_x,
-                self.rect.y + 3 * self.sprite_scale + eye_offset_y,
+                self.rect.centerx - self.eye_size[0] - 1 + eye_offset_x,
+                self.rect.y + 3 + eye_offset_y,
                 *self.eye_size)
         )
         surface.blit(
             self.eye_image,
             pygame.Rect(
-                self.rect.centerx + self.sprite_scale + eye_offset_x,
-                self.rect.y + 3 * self.sprite_scale + eye_offset_y,
+                self.rect.centerx + 1 + eye_offset_x,
+                self.rect.y + 3 + eye_offset_y,
                 *self.eye_size
             )
         )
@@ -107,16 +107,16 @@ class Ghost(Entity):
         surface.blit(
             self.pupil_image,
             pygame.Rect(
-                self.rect.centerx - self.eye_size[0] - 2 * self.sprite_scale + self.pupil_size[
+                self.rect.centerx - self.eye_size[0] - 2 + self.pupil_size[
                     0] + eye_offset_x + pupil_offset_x,
-                self.rect.y + 4 * self.sprite_scale + self.pupil_size[0] + eye_offset_y + pupil_offset_y,
+                self.rect.y + 4 + self.pupil_size[0] + eye_offset_y + pupil_offset_y,
                 *self.pupil_size)
         )
         surface.blit(
             self.pupil_image,
             pygame.Rect(
                 self.rect.centerx + self.pupil_size[0] + eye_offset_x + pupil_offset_x,
-                self.rect.y + 4 * self.sprite_scale + self.pupil_size[0] + eye_offset_y + pupil_offset_y,
+                self.rect.y + 4 + self.pupil_size[0] + eye_offset_y + pupil_offset_y,
                 *self.pupil_size
             )
         )
@@ -217,7 +217,7 @@ class Ghost(Entity):
                 is_current_tile = (tile_coords[0] % map_w, tile_coords[1] % map_h) == (current_tile_x % map_w,
                                                                                        current_tile_y % map_h)
 
-                if self._is_transparent_tile(tile, *tile_coords) and (not is_current_tile or self.reverse_direction):
+                if self._is_transparent_tile(tile, tile_coords) and (not is_current_tile or self.reverse_direction):
                     self.reverse_direction = False
                     distance = math.dist(tile_coords, target)
 
@@ -231,13 +231,13 @@ class Ghost(Entity):
             *self.get_tile_coordinates(self.rect.centerx, self.rect.centery)
         ) in [Tile.GHOST_HOUSE, Tile.GHOST_GATE]
 
-    def _is_transparent_tile(self, tile, tile_x, tile_y):
+    def _is_transparent_tile(self, tile, tile_coords):
         is_ghost_gate_transparent = self.is_in_ghost_house() and self.is_released or self.eaten
         current_tile_x, current_tile_y = self.get_tile_coordinates(*self.rect.center)
 
         return tile in self.transparent_tiles \
             or is_ghost_gate_transparent and tile == Tile.GHOST_GATE \
-            or current_tile_y <= tile_y and tile in [Tile.GHOST_NO_UPWARD_TURN, Tile.GHOST_NO_UPWARD_TURN_DOT]
+            or current_tile_y <= tile_coords[1] and tile in [Tile.GHOST_NO_UPWARD_TURN, Tile.GHOST_NO_UPWARD_TURN_DOT]
 
     def _get_speed_multiplier(self):
         if self.eaten:

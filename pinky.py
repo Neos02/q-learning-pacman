@@ -7,7 +7,7 @@ from ghost import Ghost
 class Pinky(Ghost):
 
     def __init__(self, game, start_position=(0, 0)):
-        super().__init__(game, start_position, Entity.sprite_scale * Ghost.sprite_size)
+        super().__init__(game, start_position, Ghost.sprite_size)
 
     def _target_pacman(self):
         target_tile_x, target_tile_y = self.get_tile_coordinates(*self.game.pacman.rect.center)

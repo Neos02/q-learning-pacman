@@ -20,10 +20,10 @@ class Game:
     high_score_text_image = load_image("./images/high-score-text.png")
     life_image = load_image("./images/pacman.png").subsurface(
         pygame.Rect(
-            Pacman.sprite_scale * Pacman.sprite_size,
+            Pacman.sprite_size,
             0,
-            Pacman.sprite_scale * Pacman.sprite_size,
-            Pacman.sprite_scale * Pacman.sprite_size
+            Pacman.sprite_size,
+            Pacman.sprite_size
         )
     )
 
@@ -96,10 +96,10 @@ class Game:
                              ((SCREEN_WIDTH - self.high_score_text_image.get_width()) / 2, 2))
 
         high_score_text = FONT_NUMBERS.render(f'{self.high_score}', False, COLOR_FONT)
-        DISPLAY_SURFACE.blit(high_score_text, ((SCREEN_WIDTH - high_score_text.get_width()) / 2, 18))
+        DISPLAY_SURFACE.blit(high_score_text, ((SCREEN_WIDTH - high_score_text.get_width()) / 2, 9))
 
         score_text = FONT_NUMBERS.render(f'{self.score}', False, COLOR_FONT)
-        DISPLAY_SURFACE.blit(score_text, (48, 18))
+        DISPLAY_SURFACE.blit(score_text, (24, 9))
 
         for i in range(self.lives):
             life_image_rect = self.life_image.get_rect()
