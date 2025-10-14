@@ -24,16 +24,18 @@ class Tilemap:
     def render(self):
         m, n = self.map.shape
 
-        for i in range(m):
-            for j in range(n):
-                tile = self.get_tile(j, i)
+        for y in range(m):
+            for x in range(n):
+                tile = self.map[y, x]
 
-                if tile == Tile.GHOST_NO_UPWARD_TURN_DOT:
-                    tile = Tile.SMALL_DOT
+                if tile == Tile.GHOST_NO_UPWARD_TURN_DOT.value:
+                    tile = Tile.SMALL_DOT.value
+                elif tile == Tile.GHOST_NO_UPWARD_TURN.value:
+                    tile = Tile.AIR.value
 
-                if tile.value >= 0:
-                    tile_image = self.tileset.tiles[tile.value]
-                    self.image.blit(tile_image, (j * self.tile_size, i * self.tile_size))
+                if tile >= 0:
+                    tile_image = self.tileset.tiles[tile]
+                    self.image.blit(tile_image, (x * self.tile_size, y * self.tile_size))
 
     def get_tile(self, x, y):
         h, w = self.map.shape

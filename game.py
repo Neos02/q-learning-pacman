@@ -127,6 +127,7 @@ class Game:
                 ghost.frighened = True
 
     def eat_small_dot(self, tile_x, tile_y):
+
         if self.tilemap.get_tile(tile_x, tile_y) == Tile.GHOST_NO_UPWARD_TURN_DOT:
             self.tilemap.set_tile(tile_x, tile_y, Tile.GHOST_NO_UPWARD_TURN)
         else:
