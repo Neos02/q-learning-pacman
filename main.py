@@ -6,6 +6,9 @@ pygame.init()
 
 FPS = 60
 
+FONT_NUMBERS = pygame.font.Font("fonts/numbers.ttf", 16)
+COLOR_FONT = (222, 222, 255)
+
 SCREEN_WIDTH = 448
 SCREEN_HEIGHT = 576
 DISPLAY_SURFACE = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), flags=DOUBLEBUF)

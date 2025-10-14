@@ -7,7 +7,7 @@ from pygame.locals import *
 from blinky import Blinky
 from clyde import Clyde
 from inky import Inky
-from main import DISPLAY_SURFACE, FPS
+from main import DISPLAY_SURFACE, FPS, load_image, SCREEN_WIDTH, FONT_NUMBERS, COLOR_FONT
 from pacman import Pacman
 from pinky import Pinky
 from tile import Tile
@@ -16,6 +16,8 @@ from tileset import Tileset
 
 
 class Game:
+    high_score_text_image = load_image("./images/high-score-text.png")
+
     dot_timer_max_value = 4
     ghost_eaten_base_value = 200
 
@@ -76,6 +78,12 @@ class Game:
 
         for ghost in self.ghosts:
             ghost.draw(DISPLAY_SURFACE)
+
+        DISPLAY_SURFACE.blit(self.high_score_text_image,
+                             ((SCREEN_WIDTH - self.high_score_text_image.get_width()) / 2, 2))
+
+        score_text = FONT_NUMBERS.render(f'{self.score}', False, COLOR_FONT)
+        DISPLAY_SURFACE.blit(score_text, (48, 18))
 
         pygame.display.update()
 
