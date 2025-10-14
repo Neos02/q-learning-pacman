@@ -141,8 +141,8 @@ class Ghost(Entity):
 
         if self.next_tile is None or current_tile == self.next_tile and self._can_move_to_position(next_position):
             self.velocity = (
-                self.next_velocity[0] * self._get_speed_multiplier(),
-                self.next_velocity[1] * self._get_speed_multiplier()
+                self.next_velocity[0] * self._get_speed(),
+                self.next_velocity[1] * self._get_speed()
             )
             self.next_tile = self._get_next_tile()
             self._choose_next_direction()
@@ -239,7 +239,7 @@ class Ghost(Entity):
             or is_ghost_gate_transparent and tile == Tile.GHOST_GATE \
             or current_tile_y <= tile_coords[1] and tile in [Tile.GHOST_NO_UPWARD_TURN, Tile.GHOST_NO_UPWARD_TURN_DOT]
 
-    def _get_speed_multiplier(self):
+    def _get_speed(self):
         if self.eaten:
             return self.eaten_speed_multiplier
 

@@ -8,10 +8,10 @@ from tile import Tile
 class Entity(pygame.sprite.Sprite):
     __metaclass__ = abc.ABCMeta
 
+    base_speed = FPS
     sprite_size = 0
     spritesheet = None
     transparent_tiles = [Tile.AIR, Tile.SMALL_DOT, Tile.BIG_DOT, Tile.GHOST_SLOW]
-    speed = FPS
     animation_frame_length_ms = 60
 
     def __init__(self, game, start_pos=(0, 0), image_offset_left=0):
@@ -58,8 +58,8 @@ class Entity(pygame.sprite.Sprite):
         return
 
     @abc.abstractmethod
-    def _get_speed_multiplier(self):
-        return 1
+    def _get_speed(self):
+        return self.base_speed
 
     @staticmethod
     def _get_direction(value):
