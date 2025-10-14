@@ -8,7 +8,7 @@ from pygame.locals import *
 from blinky import Blinky
 from clyde import Clyde
 from inky import Inky
-from main import DISPLAY_SURFACE, FPS, load_image, SCREEN_WIDTH, FONT_NUMBERS, COLOR_FONT
+from main import DISPLAY_SURFACE, FPS, load_image, SCREEN_WIDTH, FONT_NUMBERS, COLOR_FONT, SCREEN_HEIGHT
 from pacman import Pacman
 from pinky import Pinky
 from tile import Tile
@@ -18,6 +18,14 @@ from tileset import Tileset
 
 class Game:
     high_score_text_image = load_image("./images/high-score-text.png")
+    life_image = load_image("./images/pacman.png").subsurface(
+        pygame.Rect(
+            Pacman.sprite_scale * Pacman.sprite_size,
+            0,
+            Pacman.sprite_scale * Pacman.sprite_size,
+            Pacman.sprite_scale * Pacman.sprite_size
+        )
+    )
 
     dot_timer_max_value = 4
     ghost_eaten_base_value = 200
@@ -30,6 +38,7 @@ class Game:
         self.dot_timer_seconds = self.dot_timer_max_value
         self.score = 0
         self.ghost_eaten_points = self.ghost_eaten_base_value
+        self.lives = 3
 
         with open("./high_score.json", 'r') as f:
             self.high_score = json.load(f)["high_score"]
@@ -92,6 +101,12 @@ class Game:
         score_text = FONT_NUMBERS.render(f'{self.score}', False, COLOR_FONT)
         DISPLAY_SURFACE.blit(score_text, (48, 18))
 
+        for i in range(self.lives):
+            life_image_rect = self.life_image.get_rect()
+            life_image_rect.left = i * self.life_image.get_width() + 2
+            life_image_rect.top = SCREEN_HEIGHT - self.life_image.get_height() - 2
+            DISPLAY_SURFACE.blit(self.life_image, life_image_rect)
+
         pygame.display.update()
 
     def run(self):
@@ -145,6 +160,9 @@ class Game:
         self.tilemap.set_tile(tile_x, tile_y, Tile.AIR)
         self.enter_frightened_mode()
         self.score += 50
+
+    def die(self):
+        self.lives -= 1
 
     def game_over(self):
         print(self.score)
