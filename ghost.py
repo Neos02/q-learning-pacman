@@ -29,7 +29,7 @@ class Ghost(Entity):
     eaten_speed_multiplier = 2
     speed = Entity.sprite_scale * FPS
     animation_frame_length_ms = 120
-    flash_speed_ms = 500
+    flash_speed_ms = 300
 
     def __init__(self, game, start_pos=(0, 0), image_offset_left=0):
         super().__init__(game, start_pos, image_offset_left)
