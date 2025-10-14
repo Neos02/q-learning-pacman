@@ -36,7 +36,7 @@ class Ghost(Entity):
         self.next_tile = None
         self.next_velocity = (-self.speed, 0)
         self.eaten = False
-        self.frighened = True
+        self.frighened = False
         self.dot_counter = 0
         self.dot_limit = 0
         self.flash_time = 0
@@ -243,7 +243,7 @@ class Ghost(Entity):
         if self.eaten:
             return self.eaten_speed_multiplier
 
-        if self.frighened > 0:
+        if self.frighened:
             return self.frightened_speed_multiplier
 
         if self.game.tilemap.get_tile(*self.get_tile_coordinates(*self.rect.center)) == Tile.GHOST_SLOW:

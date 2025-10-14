@@ -8,7 +8,7 @@ from pygame.locals import *
 from blinky import Blinky
 from clyde import Clyde
 from inky import Inky
-from main import DISPLAY_SURFACE, FPS, load_image, SCREEN_WIDTH, FONT_NUMBERS, COLOR_FONT, SCREEN_HEIGHT
+from main import DISPLAY_SURFACE, FPS, load_image, SCREEN_WIDTH, FONT_NUMBERS, COLOR_FONT, SCREEN_HEIGHT, DRAW_SURFACE
 from pacman import Pacman
 from pinky import Pinky
 from tile import Tile
@@ -53,7 +53,7 @@ class Game:
         self.pacman.move(self.deltatime)
         pacman_tile = self.pacman.get_tile_coordinates(*self.pacman.rect.center)
 
-        for ghost in self.ghosts:
+        for ghost in reversed(self.ghosts):
             ghost.move(self.deltatime)
             ghost_tile = ghost.get_tile_coordinates(*ghost.rect.center)
 
@@ -65,6 +65,7 @@ class Game:
                         self.ghost_eaten_points *= 2
                 else:
                     self.game_over()
+            break
 
         self.pellet_time_seconds -= self.deltatime
 
@@ -84,30 +85,31 @@ class Game:
                     break
 
     def _draw(self):
-        DISPLAY_SURFACE.fill((0, 0, 0))
+        DRAW_SURFACE.fill((0, 0, 0))
 
-        self.tilemap.draw(DISPLAY_SURFACE)
-        self.pacman.draw(DISPLAY_SURFACE)
+        self.tilemap.draw(DRAW_SURFACE)
+        self.pacman.draw(DRAW_SURFACE)
 
         for ghost in self.ghosts:
-            ghost.draw(DISPLAY_SURFACE)
+            ghost.draw(DRAW_SURFACE)
 
-        DISPLAY_SURFACE.blit(self.high_score_text_image,
-                             ((SCREEN_WIDTH - self.high_score_text_image.get_width()) / 2, 2))
+        DRAW_SURFACE.blit(self.high_score_text_image,
+                          ((SCREEN_WIDTH - self.high_score_text_image.get_width()) / 2, 2))
 
         high_score_text = FONT_NUMBERS.render(f'{self.high_score}', False, COLOR_FONT)
-        DISPLAY_SURFACE.blit(high_score_text, ((SCREEN_WIDTH - high_score_text.get_width()) / 2, 9))
+        DRAW_SURFACE.blit(high_score_text, ((SCREEN_WIDTH - high_score_text.get_width()) / 2, 9))
 
         score_text = FONT_NUMBERS.render(f'{self.score}', False, COLOR_FONT)
-        DISPLAY_SURFACE.blit(score_text, (24, 9))
+        DRAW_SURFACE.blit(score_text, (24, 9))
 
         for i in range(self.lives):
             life_image_rect = self.life_image.get_rect()
             life_image_rect.left = i * self.life_image.get_width() + 2
             life_image_rect.top = SCREEN_HEIGHT - self.life_image.get_height() - 2
-            DISPLAY_SURFACE.blit(self.life_image, life_image_rect)
+            DRAW_SURFACE.blit(self.life_image, life_image_rect)
 
-        pygame.display.update()
+        pygame.transform.scale(DRAW_SURFACE, DISPLAY_SURFACE.get_size(), DISPLAY_SURFACE)
+        pygame.display.flip()
 
     def run(self):
         while 1:

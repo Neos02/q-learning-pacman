@@ -11,7 +11,8 @@ COLOR_FONT = (222, 222, 255)
 
 SCREEN_WIDTH = 224
 SCREEN_HEIGHT = 288
-DISPLAY_SURFACE = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), flags=DOUBLEBUF)
+DRAW_SURFACE = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+DISPLAY_SURFACE = pygame.display.set_mode((SCREEN_WIDTH * 2, SCREEN_HEIGHT * 2), flags=DOUBLEBUF)
 pygame.display.set_caption('Pac-Man')
 
 pygame.event.set_allowed([QUIT, KEYDOWN])
