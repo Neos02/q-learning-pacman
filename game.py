@@ -106,11 +106,13 @@ class Game:
         self.pellet_time_seconds = 6
 
         for ghost in self.ghosts:
-            ghost.next_velocity = (
-                -ghost.velocity[0],
-                -ghost.velocity[1],
-            )
-            ghost.frighened = True
+            if not ghost.is_in_ghost_house():
+                ghost.next_velocity = (
+                    -ghost.velocity[0],
+                    -ghost.velocity[1],
+                )
+                ghost.next_tile = None
+                ghost.frighened = True
 
     def eat_small_dot(self, tile_x, tile_y):
         self.tilemap.set_tile(tile_x, tile_y, Tile.AIR)
