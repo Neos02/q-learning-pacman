@@ -21,10 +21,6 @@ class Ghost(Entity):
     pupil_size = (2 * Entity.sprite_scale, 2 * Entity.sprite_scale)
     pupil_image = spritesheet.subsurface(pygame.Rect(sprite_size * Entity.sprite_scale * 6, eye_size[1], *pupil_size))
 
-    frightened_image = spritesheet.subsurface(
-        pygame.Rect(sprite_size * Entity.sprite_scale * 4, 0, sprite_size * Entity.sprite_scale,
-                    sprite_size * Entity.sprite_scale))
-
     transparent_tiles = [Tile.AIR, Tile.SMALL_DOT, Tile.BIG_DOT, Tile.GHOST_HOUSE, Tile.GHOST_SLOW, Tile.GHOST_HOME]
 
     regular_speed_multiplier = 0.9375
@@ -52,7 +48,16 @@ class Ghost(Entity):
             self.last_frame_update_time = ticks
 
         if not self.eaten and self.frighened:
-            surface.blit(self.frightened_image, self.rect)
+            frightened_image = self.spritesheet.subsurface(
+                pygame.Rect(
+                    self.sprite_size * Entity.sprite_scale * 4,
+                    self.image_rect.top,
+                    self.sprite_size * Entity.sprite_scale,
+                    self.sprite_size * Entity.sprite_scale
+                )
+            )
+
+            surface.blit(frightened_image, self.rect)
             return
 
         if not self.eaten:
