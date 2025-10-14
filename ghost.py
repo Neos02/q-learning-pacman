@@ -121,6 +121,9 @@ class Ghost(Entity):
         )
 
     def move(self, deltatime):
+        if self.dot_counter < self.dot_limit:
+            return
+
         current_tile = self.get_tile_coordinates(self.rect.centerx, self.rect.centery)
 
         if self.game.tilemap.get_tile(*current_tile) == Tile.GHOST_HOME:
