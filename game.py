@@ -1,3 +1,4 @@
+import json
 import sys
 import pygame
 import numpy as np
@@ -29,6 +30,9 @@ class Game:
         self.dot_timer_seconds = self.dot_timer_max_value
         self.score = 0
         self.ghost_eaten_points = self.ghost_eaten_base_value
+
+        with open("./high_score.json", 'r') as f:
+            self.high_score = json.load(f)["high_score"]
 
         blinky = Blinky(self, self._load_start_position(Tile.GHOST_START))
         pinky = Pinky(self, self._load_start_position(Tile.GHOST_START))
@@ -81,6 +85,9 @@ class Game:
 
         DISPLAY_SURFACE.blit(self.high_score_text_image,
                              ((SCREEN_WIDTH - self.high_score_text_image.get_width()) / 2, 2))
+
+        high_score_text = FONT_NUMBERS.render(f'{self.high_score}', False, COLOR_FONT)
+        DISPLAY_SURFACE.blit(high_score_text, ((SCREEN_WIDTH - high_score_text.get_width()) / 2, 18))
 
         score_text = FONT_NUMBERS.render(f'{self.score}', False, COLOR_FONT)
         DISPLAY_SURFACE.blit(score_text, (48, 18))
@@ -139,6 +146,11 @@ class Game:
 
     def game_over(self):
         print(self.score)
+
+        if self.score > self.high_score:
+            with open("./high_score.json", 'w') as f:
+                json.dump({"high_score": self.score}, f)
+
         pygame.quit()
         sys.exit()
 
