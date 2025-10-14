@@ -10,13 +10,11 @@ from tile import Tile
 class Pacman(Entity):
     spritesheet = load_image("./images/pacman.png", Entity.sprite_scale)
     sprite_size = 13
-    animation_frame_length_ms = 60
     regular_speed_multiplier = 1
     pellet_speed_multiplier = 1.125
 
     def __init__(self, game, start_pos=(0, 0)):
         super().__init__(game, start_pos)
-        self.last_frame_update_time = 0
         self.queued_velocity = (0, 0)
         self.freeze_frames = 0
 

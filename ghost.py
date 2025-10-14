@@ -16,10 +16,10 @@ class Ghost(Entity):
     sprite_size = 14
 
     eye_size = (4 * Entity.sprite_scale, 5 * Entity.sprite_scale)
-    eye_image = spritesheet.subsurface(pygame.Rect(sprite_size * Entity.sprite_scale * 5, 0, *eye_size))
+    eye_image = spritesheet.subsurface(pygame.Rect(sprite_size * Entity.sprite_scale * 6, 0, *eye_size))
 
     pupil_size = (2 * Entity.sprite_scale, 2 * Entity.sprite_scale)
-    pupil_image = spritesheet.subsurface(pygame.Rect(sprite_size * Entity.sprite_scale * 5, eye_size[1], *pupil_size))
+    pupil_image = spritesheet.subsurface(pygame.Rect(sprite_size * Entity.sprite_scale * 6, eye_size[1], *pupil_size))
 
     frightened_image = spritesheet.subsurface(
         pygame.Rect(sprite_size * Entity.sprite_scale * 4, 0, sprite_size * Entity.sprite_scale,
@@ -32,6 +32,7 @@ class Ghost(Entity):
     tunnel_speed_multiplier = 0.5
     eaten_speed_multiplier = 2
     speed = Entity.sprite_scale * FPS
+    animation_frame_length_ms = 120
 
     def __init__(self, game, start_pos=(0, 0), image_offset_left=0):
         super().__init__(game, start_pos, image_offset_left)
@@ -43,6 +44,13 @@ class Ghost(Entity):
         self.dot_limit = 0
 
     def draw(self, surface):
+        ticks = pygame.time.get_ticks()
+
+        if (ticks - self.last_frame_update_time) >= self.animation_frame_length_ms:
+            self.image_rect.top = (self.image_rect.top + self.scaled_sprite_size) % self.spritesheet.get_height()
+            self.image = self.spritesheet.subsurface(self.image_rect)
+            self.last_frame_update_time = ticks
+
         if not self.eaten and self.frighened:
             surface.blit(self.frightened_image, self.rect)
             return

@@ -13,6 +13,7 @@ class Entity(pygame.sprite.Sprite):
     spritesheet = None
     transparent_tiles = [Tile.AIR, Tile.SMALL_DOT, Tile.BIG_DOT, Tile.GHOST_SLOW]
     speed = sprite_scale * FPS
+    animation_frame_length_ms = 60
 
     def __init__(self, game, start_pos=(0, 0), image_offset_left=0):
         super().__init__()
@@ -25,6 +26,7 @@ class Entity(pygame.sprite.Sprite):
         self.start_pos = (start_pos[0] + 2 * self.sprite_scale, start_pos[1] - 2 * self.sprite_scale)
         self.rect.move_ip(*self.start_pos)
         self.game = game
+        self.last_frame_update_time = 0
 
     def get_tile_coordinates(self, center_x, center_y):
         return int(center_x // self.game.tilemap.tile_size), int(center_y // self.game.tilemap.tile_size)
