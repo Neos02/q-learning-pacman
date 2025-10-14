@@ -29,6 +29,7 @@ class Ghost(Entity):
     eaten_speed_multiplier = 2
     speed = Entity.sprite_scale * FPS
     animation_frame_length_ms = 120
+    flash_speed_ms = 500
 
     def __init__(self, game, start_pos=(0, 0), image_offset_left=0):
         super().__init__(game, start_pos, image_offset_left)
@@ -38,6 +39,7 @@ class Ghost(Entity):
         self.frighened = True
         self.dot_counter = 0
         self.dot_limit = 0
+        self.flash_time = 0
 
     def draw(self, surface):
         ticks = pygame.time.get_ticks()
@@ -48,9 +50,11 @@ class Ghost(Entity):
             self.last_frame_update_time = ticks
 
         if not self.eaten and self.frighened:
+            is_flash = self.game.pellet_time_seconds < 2 and ticks % (2 * self.flash_speed_ms) - self.flash_speed_ms > 0
+
             frightened_image = self.spritesheet.subsurface(
                 pygame.Rect(
-                    self.sprite_size * Entity.sprite_scale * 4,
+                    self.sprite_size * Entity.sprite_scale * (5 if is_flash else 4),
                     self.image_rect.top,
                     self.sprite_size * Entity.sprite_scale,
                     self.sprite_size * Entity.sprite_scale
