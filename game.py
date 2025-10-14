@@ -53,7 +53,7 @@ class Game:
         self.pacman.move(self.deltatime)
         pacman_tile = self.pacman.get_tile_coordinates(*self.pacman.rect.center)
 
-        for ghost in reversed(self.ghosts):
+        for ghost in self.ghosts:
             ghost.move(self.deltatime)
             ghost_tile = ghost.get_tile_coordinates(*ghost.rect.center)
 
@@ -65,7 +65,6 @@ class Game:
                         self.ghost_eaten_points *= 2
                 else:
                     self.game_over()
-            break
 
         self.pellet_time_seconds -= self.deltatime
 
