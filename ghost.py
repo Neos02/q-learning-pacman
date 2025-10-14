@@ -103,9 +103,9 @@ class Ghost(Entity):
         )
 
     def move(self, deltatime):
-        current_tile_x, current_tile_y = self.get_tile_coordinates(self.rect.centerx, self.rect.centery)
+        current_tile = self.get_tile_coordinates(self.rect.centerx, self.rect.centery)
 
-        if self.game.tilemap.get_tile(current_tile_x, current_tile_y) == Tile.GHOST_HOME:
+        if self.game.tilemap.get_tile(*current_tile) == Tile.GHOST_HOME:
             self.eaten = False
             self.frighened = False
 
@@ -114,8 +114,7 @@ class Ghost(Entity):
             self.rect.centery + self.velocity[1] * deltatime
         )
 
-        if self.next_tile is None or \
-                (current_tile_x, current_tile_y) == self.next_tile and self._can_move_to_position(next_position):
+        if self.next_tile is None or current_tile == self.next_tile and self._can_move_to_position(next_position):
             self.velocity = (
                 self.next_velocity[0] * self._get_speed_multiplier(),
                 self.next_velocity[1] * self._get_speed_multiplier()

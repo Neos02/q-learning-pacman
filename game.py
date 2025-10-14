@@ -106,12 +106,9 @@ class Game:
         self.pellet_time_seconds = 6
 
         for ghost in self.ghosts:
-            temp = ghost.next_tile
-            current_tile = ghost.get_tile_coordinates(*ghost.rect.center)
-            ghost.next_tile = current_tile
             ghost.next_velocity = (
-                (current_tile[0] - temp[0]) * ghost.speed,
-                (current_tile[1] - temp[1]) * ghost.speed,
+                -ghost.velocity[0],
+                -ghost.velocity[1],
             )
             ghost.frighened = True
 
