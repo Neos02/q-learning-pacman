@@ -1,6 +1,7 @@
 import pygame
 
 from main import load_image
+from tile import Tile
 
 
 class Tileset:

@@ -127,7 +127,11 @@ class Game:
                 ghost.frighened = True
 
     def eat_small_dot(self, tile_x, tile_y):
-        self.tilemap.set_tile(tile_x, tile_y, Tile.AIR)
+        if self.tilemap.get_tile(tile_x, tile_y) == Tile.GHOST_NO_UPWARD_TURN_DOT:
+            self.tilemap.set_tile(tile_x, tile_y, Tile.GHOST_NO_UPWARD_TURN)
+        else:
+            self.tilemap.set_tile(tile_x, tile_y, Tile.AIR)
+
         self.dot_timer_seconds = self.dot_timer_max_value
         self.score += 10
 

@@ -12,6 +12,8 @@ class Pacman(Entity):
     sprite_size = 13
     regular_speed_multiplier = 1
     pellet_speed_multiplier = 1.125
+    transparent_tiles = [Tile.AIR, Tile.SMALL_DOT, Tile.BIG_DOT, Tile.GHOST_SLOW, Tile.GHOST_NO_UPWARD_TURN,
+                         Tile.GHOST_NO_UPWARD_TURN_DOT]
 
     def __init__(self, game, start_pos=(0, 0)):
         super().__init__(game, start_pos)
@@ -83,11 +85,12 @@ class Pacman(Entity):
                 and not self._has_collision(next_tile_x, next_tile_y):
             self.rect.centerx = position[0]
             self.rect.centery = position[1]
+            tile = self.game.tilemap.get_tile(current_tile_x, current_tile_y)
 
-            if self.game.tilemap.get_tile(current_tile_x, current_tile_y) == Tile.SMALL_DOT:
+            if tile == Tile.SMALL_DOT or tile == Tile.GHOST_NO_UPWARD_TURN_DOT:
                 self.freeze_frames = 1
                 self.game.eat_small_dot(current_tile_x, current_tile_y)
-            elif self.game.tilemap.get_tile(current_tile_x, current_tile_y) == Tile.BIG_DOT:
+            elif tile == Tile.BIG_DOT:
                 self.freeze_frames = 3
                 self.game.eat_big_dot(current_tile_x, current_tile_y)
         else:

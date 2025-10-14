@@ -26,9 +26,14 @@ class Tilemap:
 
         for i in range(m):
             for j in range(n):
-                if self.map[i, j] >= 0:
-                    tile = self.tileset.tiles[self.map[i, j]]
-                    self.image.blit(tile, (j * self.tile_size, i * self.tile_size))
+                tile = self.get_tile(j, i)
+
+                if tile == Tile.GHOST_NO_UPWARD_TURN_DOT:
+                    tile = Tile.SMALL_DOT
+
+                if tile.value >= 0:
+                    tile_image = self.tileset.tiles[tile.value]
+                    self.image.blit(tile_image, (j * self.tile_size, i * self.tile_size))
 
     def get_tile(self, x, y):
         h, w = self.map.shape

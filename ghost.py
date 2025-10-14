@@ -213,7 +213,7 @@ class Ghost(Entity):
                 is_current_tile = (tile_coords[0] % map_w, tile_coords[1] % map_h) == (current_tile_x % map_w,
                                                                                        current_tile_y % map_h)
 
-                if self._is_transparent_tile(tile) and (not is_current_tile or self.reverse_direction):
+                if self._is_transparent_tile(tile, *tile_coords) and (not is_current_tile or self.reverse_direction):
                     self.reverse_direction = False
                     distance = math.dist(tile_coords, target)
 
@@ -227,9 +227,13 @@ class Ghost(Entity):
             *self.get_tile_coordinates(self.rect.centerx, self.rect.centery)
         ) == Tile.GHOST_HOUSE
 
-    def _is_transparent_tile(self, tile):
+    def _is_transparent_tile(self, tile, tile_x, tile_y):
         is_ghost_gate_transparent = self.is_in_ghost_house() and self.dot_counter >= self.dot_limit or self.eaten
-        return tile in self.transparent_tiles or is_ghost_gate_transparent and tile == Tile.GHOST_GATE
+        current_tile_x, current_tile_y = self.get_tile_coordinates(*self.rect.center)
+
+        return tile in self.transparent_tiles \
+            or is_ghost_gate_transparent and tile == Tile.GHOST_GATE \
+            or current_tile_y <= tile_y and tile in [Tile.GHOST_NO_UPWARD_TURN, Tile.GHOST_NO_UPWARD_TURN_DOT]
 
     def _get_speed_multiplier(self):
         if self.eaten:
