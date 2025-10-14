@@ -122,11 +122,8 @@ class Game:
 
         for ghost in self.ghosts:
             if not ghost.is_in_ghost_house():
-                ghost.next_velocity = (
-                    -ghost.velocity[0],
-                    -ghost.velocity[1],
-                )
                 ghost.next_tile = None
+                ghost.reverse_direction = True
                 ghost.frighened = True
 
     def eat_small_dot(self, tile_x, tile_y):

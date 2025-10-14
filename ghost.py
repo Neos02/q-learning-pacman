@@ -40,6 +40,7 @@ class Ghost(Entity):
         self.dot_counter = 0
         self.dot_limit = 0
         self.flash_time = 0
+        self.reverse_direction = False
 
     def draw(self, surface):
         ticks = pygame.time.get_ticks()
@@ -153,11 +154,18 @@ class Ghost(Entity):
             self.rect.move_ip(-SCREEN_WIDTH - self.rect.width, 0)
 
     def _choose_target(self, tile_choices):
+        current_tile_x, current_tile_y = self.get_tile_coordinates(*self.rect.center)
+
         if self.eaten:
             return self.game.tilemap.find_tile(Tile.GHOST_HOME)
         elif self.is_in_ghost_house():
             return self.game.tilemap.find_tile(Tile.GHOST_GATE)
-        elif self.frighened > 0:
+        elif self.reverse_direction:
+            return (
+                current_tile_x + self._get_direction(self.velocity[0]),
+                current_tile_y + self._get_direction(self.velocity[1])
+            )
+        elif self.frighened:
             return tile_choices[random.randint(0, len(tile_choices) - 1)]
         else:
             return self._target_pacman()
@@ -199,9 +207,11 @@ class Ghost(Entity):
 
             for tile_coords in tile_choices:
                 tile = self.game.tilemap.get_tile(*tile_coords)
+                is_current_tile = (tile_coords[0] % map_w, tile_coords[1] % map_h) == (current_tile_x % map_w,
+                                                                                       current_tile_y % map_h)
 
-                if (self._is_transparent_tile(tile) and (tile_coords[0] % map_w, tile_coords[1] % map_h) !=
-                        (current_tile_x % map_w, current_tile_y % map_h)):
+                if self._is_transparent_tile(tile) and (not is_current_tile or self.reverse_direction):
+                    self.reverse_direction = False
                     distance = math.dist(tile_coords, target)
 
                     if distance < min_distance:
