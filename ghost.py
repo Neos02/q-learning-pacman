@@ -165,8 +165,8 @@ class Ghost(Entity):
             return self.game.tilemap.find_tile(Tile.GHOST_GATE)
         elif self.reverse_direction:
             return (
-                current_tile_x + self._get_direction(self.velocity[0]),
-                current_tile_y + self._get_direction(self.velocity[1])
+                current_tile_x - self._get_direction(self.velocity[0]),
+                current_tile_y - self._get_direction(self.velocity[1])
             )
         elif self.frighened:
             return tile_choices[random.randint(0, len(tile_choices) - 1)]
