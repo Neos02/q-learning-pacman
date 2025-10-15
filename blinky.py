@@ -5,7 +5,7 @@ from ghost import Ghost
 
 class Blinky(Ghost):
 
-    def __init__(self, game, start_position=(0, 0)):
+    def __init__(self, game, start_position: Vector2 = Vector2(0, 0)) -> None:
         super().__init__(game, start_position, 0)
 
     def _target_pacman(self) -> Vector2:

@@ -1,13 +1,12 @@
 import abc
 import math
 import random
-
 import pygame
-from pygame import Vector2, SurfaceType
 
+from pygame import Vector2, SurfaceType
 from direction import Direction
 from entity import Entity
-from main import SCREEN_WIDTH, load_image, FPS
+from main import load_image, FPS
 from tile import Tile
 
 
@@ -29,10 +28,10 @@ class Ghost(Entity):
     animation_frame_length_ms = 120
     flash_speed_ms = 300
 
-    def __init__(self, game, start_pos=(0, 0), image_offset_left=0):
-        super().__init__(game, start_pos, image_offset_left)
+    def __init__(self, game, start_position: Vector2 = Vector2(0, 0), image_offset_left: int = 0) -> None:
+        super().__init__(game, start_position, image_offset_left)
         self.next_tile = None
-        self.next_direction = Direction.LEFT
+        self.queued_direction = Direction.LEFT
         self.eaten = False
         self.frighened = False
         self.dot_counter = 0
@@ -137,7 +136,7 @@ class Ghost(Entity):
 
         if self.next_tile is None or current_tile_coordinates == self.next_tile \
                 and self._can_move_to_position(next_position):
-            self.direction = self.next_direction
+            self.direction = self.queued_direction
             self.next_tile = self._get_next_tile_coordinates()
             self._choose_next_direction()
 
@@ -193,7 +192,7 @@ class Ghost(Entity):
 
                     if distance < min_distance:
                         min_distance = distance
-                        self.next_direction = tile_coords - self.next_tile
+                        self.queued_direction = tile_coords - self.next_tile
 
     def is_in_ghost_house(self) -> bool:
         return self.game.tilemap.get_tile(self.get_current_tile_coordinates()) in [Tile.GHOST_HOUSE, Tile.GHOST_GATE]

@@ -1,11 +1,10 @@
 import pygame
 from pygame import Vector2, SurfaceType
-
 from pygame.locals import *
 
 from direction import Direction
 from entity import Entity
-from main import SCREEN_WIDTH, load_image, SCREEN_HEIGHT
+from main import load_image
 from tile import Tile
 
 
@@ -15,9 +14,8 @@ class Pacman(Entity):
     transparent_tiles = [Tile.AIR, Tile.SMALL_DOT, Tile.BIG_DOT, Tile.GHOST_SLOW, Tile.GHOST_NO_UPWARD_TURN,
                          Tile.GHOST_NO_UPWARD_TURN_DOT]
 
-    def __init__(self, game, start_pos: Vector2 = Vector2(0, 0)):
-        super().__init__(game, start_pos)
-        self.queued_direction = Vector2(0, 0)
+    def __init__(self, game, start_position: Vector2 = Vector2(0, 0)):
+        super().__init__(game, start_position)
         self.freeze_frames = 0
 
     def draw(self, surface: SurfaceType) -> None:

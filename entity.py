@@ -3,6 +3,7 @@ import abc
 
 from pygame import Vector2, SurfaceType
 
+from direction import Direction
 from main import FPS, SCREEN_WIDTH, SCREEN_HEIGHT
 from tile import Tile
 
@@ -16,17 +17,15 @@ class Entity(pygame.sprite.Sprite):
     transparent_tiles = [Tile.AIR, Tile.SMALL_DOT, Tile.BIG_DOT, Tile.GHOST_SLOW]
     animation_frame_length_ms = 60
 
-    def __init__(self, game, start_position: Vector2 = Vector2(0, 0), image_offset_left: int = 0):
+    def __init__(self, game, start_position: Vector2 = Vector2(0, 0), image_offset_left: int = 0) -> None:
         super().__init__()
-        self.start_position = Vector2(
-            start_position.x + game.tilemap.tile_size - 1,
-            start_position.y + game.tilemap.tile_size / 2
-        )
+        self.start_position = start_position + Vector2(game.tilemap.tile_size - 1, game.tilemap.tile_size / 2)
         self._position = self.start_position.copy()
         self.rect = pygame.Rect(self.position.x, self.position.y, self.sprite_size, self.sprite_size)
         self.image_rect = pygame.Rect(image_offset_left, 0, self.sprite_size, self.sprite_size)
         self.image = self.spritesheet.subsurface(self.image_rect)
-        self.direction = Vector2(0, 0)
+        self.direction = Direction.NONE
+        self.queued_direction = Direction.NONE
         self.game = game
         self.last_frame_update_time = 0
 
