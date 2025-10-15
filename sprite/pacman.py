@@ -35,6 +35,7 @@ class Pacman(Entity):
 
             if not self._has_collision(queued_tile):
                 self.direction = self.queued_direction
+                self.image.direction = self.direction
                 self._align_to_grid(
                     self.direction.x == 0 and self.direction.y != 0,
                     self.direction.x != 0 and self.direction.y == 0
