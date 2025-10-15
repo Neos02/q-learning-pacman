@@ -21,7 +21,12 @@ class Entity(pygame.sprite.Sprite):
         super().__init__()
         self.start_position = start_position
         self._position = self.start_position.copy()
-        self.rect = pygame.Rect(self.position.x, self.position.y, self.sprite_size, self.sprite_size)
+        self.rect = pygame.Rect(
+            self.position.x - self.sprite_size / 2,
+            self.position.y - self.sprite_size / 2,
+            self.sprite_size,
+            self.sprite_size
+        )
         self.image_rect = pygame.Rect(image_offset_left, 0, self.sprite_size, self.sprite_size)
         self.image = self.spritesheet.subsurface(self.image_rect)
         self.direction = Direction.NONE

@@ -33,8 +33,7 @@ class Game:
     def __init__(self):
         self.deltatime = 0
         self.tilemap = Tilemap("data/map.json", Tileset("images/tileset.png"))
-        self.pacman = Pacman(self, self._load_start_position(Tile.PLAYER_START) + Vector2(self.tilemap.tile_size - 1,
-                                                                                          self.tilemap.tile_size / 2))
+        self.pacman = Pacman(self, self._load_start_position(Tile.PLAYER_START))
         self.pellet_time_seconds = 0
         self.dot_timer_seconds = self.dot_timer_max_value
         self.score = 0
@@ -131,7 +130,8 @@ class Game:
         else:
             self.tilemap.set_tile(tile_coordinates, Tile.AIR)
 
-        return tile_coordinates * self.tilemap.tile_size
+        return (tile_coordinates * self.tilemap.tile_size +
+                Vector2(self.tilemap.tile_size - 1, self.tilemap.tile_size / 2))
 
     def enter_frightened_mode(self) -> None:
         self.pellet_time_seconds = 6

@@ -4,6 +4,7 @@ import random
 import pygame
 
 from pygame import Vector2, SurfaceType
+from sprite.ghost_eye import GhostEye
 from utils.direction import Direction
 from sprite.entity import Entity
 from main import load_image, FPS
@@ -15,12 +16,6 @@ class Ghost(Entity):
 
     spritesheet = load_image("images/ghosts.png")
     sprite_size = 14
-
-    eye_size = (4, 5)
-    eye_image = spritesheet.subsurface(pygame.Rect(sprite_size * 6, 0, *eye_size))
-
-    pupil_size = (2, 2)
-    pupil_image = spritesheet.subsurface(pygame.Rect(sprite_size * 6, eye_size[1], *pupil_size))
 
     transparent_tiles = [Tile.AIR, Tile.SMALL_DOT, Tile.BIG_DOT, Tile.GHOST_HOUSE, Tile.GHOST_SLOW, Tile.GHOST_HOME]
 
@@ -39,6 +34,7 @@ class Ghost(Entity):
         self.flash_time = 0
         self.reverse_direction = False
         self.is_released = False
+        self.eyes = [GhostEye(self.position, Vector2(-3, -3)), GhostEye(self.position, Vector2(3, -3))]
 
     def draw(self, surface: SurfaceType) -> None:
         ticks = pygame.time.get_ticks()
@@ -66,58 +62,8 @@ class Ghost(Entity):
         if not self.eaten:
             surface.blit(self.image, self.rect)
 
-        eye_offset_x = 0
-        eye_offset_y = 0
-        pupil_offset_x = 0
-        pupil_offset_y = 0
-
-        match self.direction:
-            case Direction.LEFT:
-                eye_offset_x = -1
-                pupil_offset_x = -1
-                pupil_offset_y = -1
-            case Direction.RIGHT:
-                eye_offset_x = 1
-                pupil_offset_x = 1
-                pupil_offset_y = -1
-            case Direction.UP:
-                eye_offset_y = -2
-                pupil_offset_y = -3
-
-        # draw eyes
-        surface.blit(
-            self.eye_image,
-            pygame.Rect(
-                self.rect.centerx - self.eye_size[0] - 1 + eye_offset_x,
-                self.rect.y + 3 + eye_offset_y,
-                *self.eye_size)
-        )
-        surface.blit(
-            self.eye_image,
-            pygame.Rect(
-                self.rect.centerx + 1 + eye_offset_x,
-                self.rect.y + 3 + eye_offset_y,
-                *self.eye_size
-            )
-        )
-
-        # draw pupils
-        surface.blit(
-            self.pupil_image,
-            pygame.Rect(
-                self.rect.centerx - self.eye_size[0] - 2 + self.pupil_size[
-                    0] + eye_offset_x + pupil_offset_x,
-                self.rect.y + 4 + self.pupil_size[0] + eye_offset_y + pupil_offset_y,
-                *self.pupil_size)
-        )
-        surface.blit(
-            self.pupil_image,
-            pygame.Rect(
-                self.rect.centerx + self.pupil_size[0] + eye_offset_x + pupil_offset_x,
-                self.rect.y + 4 + self.pupil_size[0] + eye_offset_y + pupil_offset_y,
-                *self.pupil_size
-            )
-        )
+        for eye in self.eyes:
+            eye.draw(surface)
 
     def move(self, deltatime: float) -> None:
         if self.dot_counter == self.dot_limit:
@@ -145,6 +91,9 @@ class Ghost(Entity):
             self.direction.x == 0 and self.direction.y != 0,
             self.direction.x != 0 and self.direction.y == 0
         )
+
+        for eye in self.eyes:
+            eye.move(self.position, self.direction)
 
     def _choose_target(self, tile_choices: list[Vector2]) -> Vector2:
         if self.eaten:
