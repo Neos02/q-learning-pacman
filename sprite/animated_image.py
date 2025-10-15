@@ -12,14 +12,11 @@ class AnimatedImage(Sprite):
         super().__init__()
         self.spritesheet = pygame.image.load(path).convert_alpha()
         self.sprite_size = sprite_size
-        self.image_rect = pygame.Rect(
-            frame_index * sprite_size.x,
-            sprite_index * sprite_size.y,
-            sprite_size.x,
-            sprite_size.y
-        )
-        self.image = self.spritesheet.subsurface(self.image_rect)
-        self.rect = self.image.get_rect()
+        self._frame_index = frame_index
+        self.frame_count = self.spritesheet.get_width() / self.sprite_size.x
+        self.sprite_index = sprite_index
+        self.image = None
+        self.rect = pygame.Rect(0, 0, sprite_size.x, sprite_size.y)
         self.frame_time_ms = frame_time_ms
         self.last_frame_time_ms = 0
         self.direction = direction
@@ -29,16 +26,32 @@ class AnimatedImage(Sprite):
 
         if ticks - self.last_frame_time_ms > self.frame_time_ms:
             self.last_frame_time_ms = ticks
-            self.image_rect.left = (self.image_rect.left + self.image_rect.width) % self.spritesheet.get_width()
+            self.frame_index = (self.frame_index + 1) % self.frame_count
+
+        image_rect = pygame.Rect(
+            self.frame_index * self.sprite_size.x,
+            self.sprite_index * self.sprite_size.y,
+            self.sprite_size.x,
+            self.sprite_size.y
+        )
 
         match self.direction:
             case Direction.LEFT | Direction.NONE:
-                self.image = self.spritesheet.subsurface(self.image_rect)
+                self.image = self.spritesheet.subsurface(image_rect)
             case Direction.UP:
-                self.image = pygame.transform.rotate(self.spritesheet.subsurface(self.image_rect), -90)
+                self.image = pygame.transform.rotate(self.spritesheet.subsurface(image_rect), -90)
             case Direction.DOWN:
-                self.image = pygame.transform.rotate(self.spritesheet.subsurface(self.image_rect), 90)
+                self.image = pygame.transform.rotate(self.spritesheet.subsurface(image_rect), 90)
             case Direction.RIGHT:
-                self.image = pygame.transform.rotate(self.spritesheet.subsurface(self.image_rect), 180)
+                self.image = pygame.transform.rotate(self.spritesheet.subsurface(image_rect), 180)
 
         surface.blit(self.image, self.rect)
+
+    @property
+    def frame_index(self) -> int:
+        return self._frame_index
+
+    @frame_index.setter
+    def frame_index(self, frame_index: int):
+        self._frame_index = frame_index % self.frame_count
+        self.last_frame_time_ms = pygame.time.get_ticks()

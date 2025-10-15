@@ -23,7 +23,10 @@ class Pacman(Entity):
         self.freeze_frames = 0
 
     def draw(self, surface: SurfaceType) -> None:
-        super().draw(surface)
+        if self.direction == Direction.NONE:
+            self.image.frame_index = 0
+
+        self.image.draw(surface)
 
     def move(self, deltatime: float) -> None:
         current_tile = self.get_current_tile_coordinates()
