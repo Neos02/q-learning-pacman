@@ -19,7 +19,7 @@ class Entity(pygame.sprite.Sprite):
 
     def __init__(self, game, start_position: Vector2 = Vector2(0, 0), image_offset_left: int = 0) -> None:
         super().__init__()
-        self.start_position = start_position + Vector2(game.tilemap.tile_size - 1, game.tilemap.tile_size / 2)
+        self.start_position = start_position
         self._position = self.start_position.copy()
         self.rect = pygame.Rect(self.position.x, self.position.y, self.sprite_size, self.sprite_size)
         self.image_rect = pygame.Rect(image_offset_left, 0, self.sprite_size, self.sprite_size)

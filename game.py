@@ -33,7 +33,8 @@ class Game:
     def __init__(self):
         self.deltatime = 0
         self.tilemap = Tilemap("./maps/original.json", Tileset("./images/tileset.png"))
-        self.pacman = Pacman(self, self._load_start_position(Tile.PLAYER_START))
+        self.pacman = Pacman(self, self._load_start_position(Tile.PLAYER_START) + Vector2(self.tilemap.tile_size - 1,
+                                                                                          self.tilemap.tile_size / 2))
         self.pellet_time_seconds = 0
         self.dot_timer_seconds = self.dot_timer_max_value
         self.score = 0
