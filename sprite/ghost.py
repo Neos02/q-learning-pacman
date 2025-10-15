@@ -23,8 +23,8 @@ class Ghost(Entity):
     animation_frame_length_ms = 120
     flash_speed_ms = 300
 
-    def __init__(self, game, start_position: Vector2 = Vector2(0, 0), image_offset_left: int = 0) -> None:
-        super().__init__(game, start_position, image_offset_left)
+    def __init__(self, game, start_position: Vector2 = Vector2(0, 0), image_offset_top: int = 0) -> None:
+        super().__init__(game, start_position, image_offset_top)
         self.next_tile = None
         self.queued_direction = Direction.LEFT
         self.eaten = False
@@ -40,7 +40,7 @@ class Ghost(Entity):
         ticks = pygame.time.get_ticks()
 
         if (ticks - self.last_frame_update_time) >= self.animation_frame_length_ms:
-            self.image_rect.top = (self.image_rect.top + self.sprite_size) % self.spritesheet.get_height()
+            self.image_rect.left = (self.image_rect.left + self.sprite_size) % self.spritesheet.get_width()
             self.image = self.spritesheet.subsurface(self.image_rect)
             self.last_frame_update_time = ticks
 
@@ -49,8 +49,8 @@ class Ghost(Entity):
 
             frightened_image = self.spritesheet.subsurface(
                 pygame.Rect(
+                    self.image_rect.left,
                     self.sprite_size * (5 if is_flash else 4),
-                    self.image_rect.top,
                     self.sprite_size,
                     self.sprite_size
                 )

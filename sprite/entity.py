@@ -17,7 +17,7 @@ class Entity(pygame.sprite.Sprite):
     transparent_tiles = [Tile.AIR, Tile.SMALL_DOT, Tile.BIG_DOT, Tile.GHOST_SLOW]
     animation_frame_length_ms = 60
 
-    def __init__(self, game, start_position: Vector2 = Vector2(0, 0), image_offset_left: int = 0) -> None:
+    def __init__(self, game, start_position: Vector2 = Vector2(0, 0), image_offset_top: int = 0) -> None:
         super().__init__()
         self.start_position = start_position
         self._position = self.start_position.copy()
@@ -27,7 +27,7 @@ class Entity(pygame.sprite.Sprite):
             self.sprite_size,
             self.sprite_size
         )
-        self.image_rect = pygame.Rect(image_offset_left, 0, self.sprite_size, self.sprite_size)
+        self.image_rect = pygame.Rect(0, image_offset_top, self.sprite_size, self.sprite_size)
         self.image = self.spritesheet.subsurface(self.image_rect)
         self.direction = Direction.NONE
         self.queued_direction = Direction.NONE

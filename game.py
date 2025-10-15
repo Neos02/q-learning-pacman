@@ -131,7 +131,7 @@ class Game:
             self.tilemap.set_tile(tile_coordinates, Tile.AIR)
 
         return (tile_coordinates * self.tilemap.tile_size +
-                Vector2(self.tilemap.tile_size - 1, self.tilemap.tile_size / 2))
+                Vector2(0, self.tilemap.tile_size / 2))
 
     def enter_frightened_mode(self) -> None:
         self.pellet_time_seconds = 6
