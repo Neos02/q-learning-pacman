@@ -8,7 +8,7 @@ from world.tile import Tile
 class Clyde(Ghost):
 
     def __init__(self, game, start_position: Vector2 = Vector2(0, 0)) -> None:
-        super().__init__(game, start_position, 3 * Ghost.sprite_size)
+        super().__init__(game, start_position, 3)
         self.dot_limit = 60
 
     def _target_pacman(self) -> Vector2:

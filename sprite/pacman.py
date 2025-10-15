@@ -2,6 +2,7 @@ import pygame
 from pygame import Vector2, SurfaceType
 from pygame.locals import *
 
+from sprite.animated_image import AnimatedImage
 from utils.direction import Direction
 from sprite.entity import Entity
 from main import load_image
@@ -9,38 +10,20 @@ from world.tile import Tile
 
 
 class Pacman(Entity):
-    spritesheet = load_image("images/pacman.png")
     sprite_size = 13
     transparent_tiles = [Tile.AIR, Tile.SMALL_DOT, Tile.BIG_DOT, Tile.GHOST_SLOW, Tile.GHOST_NO_UPWARD_TURN,
                          Tile.GHOST_NO_UPWARD_TURN_DOT]
 
     def __init__(self, game, start_position: Vector2 = Vector2(0, 0)):
-        super().__init__(game, start_position)
+        super().__init__(
+            game,
+            start_position,
+            AnimatedImage("images/pacman.png", Vector2(self.sprite_size), 60)
+        )
         self.freeze_frames = 0
 
     def draw(self, surface: SurfaceType) -> None:
-        ticks = pygame.time.get_ticks()
-
-        # make pacman be closed when not moving
-        if self.direction == Direction.NONE:
-            self.image_rect.left = 0
-            self.image = self.spritesheet.subsurface(self.image_rect)
-            self.last_frame_update_time = ticks
-
-        if (ticks - self.last_frame_update_time) >= self.animation_frame_length_ms:
-            self.image_rect.left = (self.image_rect.left + self.sprite_size) % self.spritesheet.get_width()
-            self.image = self.spritesheet.subsurface(self.image_rect)
-            self.last_frame_update_time = ticks
-
-            match self.direction:
-                case Direction.UP:
-                    self.image = pygame.transform.rotate(self.image, -90)
-                case Direction.DOWN:
-                    self.image = pygame.transform.rotate(self.image, 90)
-                case Direction.RIGHT:
-                    self.image = pygame.transform.rotate(self.image, 180)
-
-        surface.blit(self.image, self.rect)
+        super().draw(surface)
 
     def move(self, deltatime: float) -> None:
         current_tile = self.get_current_tile_coordinates()

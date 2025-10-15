@@ -6,7 +6,7 @@ from sprite.ghost import Ghost
 class Inky(Ghost):
 
     def __init__(self, blinky, game, start_position: Vector2 = Vector2(0, 0)) -> None:
-        super().__init__(game, start_position, 2 * Ghost.sprite_size)
+        super().__init__(game, start_position, 2)
         self.blinky = blinky
         self.dot_limit = 30
 

@@ -4,6 +4,8 @@ import random
 import pygame
 
 from pygame import Vector2, SurfaceType
+
+from sprite.animated_image import AnimatedImage
 from sprite.ghost_eye import GhostEye
 from utils.direction import Direction
 from sprite.entity import Entity
@@ -20,11 +22,14 @@ class Ghost(Entity):
     transparent_tiles = [Tile.AIR, Tile.SMALL_DOT, Tile.BIG_DOT, Tile.GHOST_HOUSE, Tile.GHOST_SLOW, Tile.GHOST_HOME]
 
     speed = FPS
-    animation_frame_length_ms = 120
     flash_speed_ms = 300
 
-    def __init__(self, game, start_position: Vector2 = Vector2(0, 0), image_offset_top: int = 0) -> None:
-        super().__init__(game, start_position, image_offset_top)
+    def __init__(self, game, start_position: Vector2 = Vector2(0, 0), sprite_index: int = 0) -> None:
+        super().__init__(
+            game,
+            start_position,
+            AnimatedImage("images/ghosts.png", Vector2(self.sprite_size), 120, sprite_index)
+        )
         self.next_tile = None
         self.queued_direction = Direction.LEFT
         self.eaten = False
@@ -39,28 +44,23 @@ class Ghost(Entity):
     def draw(self, surface: SurfaceType) -> None:
         ticks = pygame.time.get_ticks()
 
-        if (ticks - self.last_frame_update_time) >= self.animation_frame_length_ms:
-            self.image_rect.left = (self.image_rect.left + self.sprite_size) % self.spritesheet.get_width()
-            self.image = self.spritesheet.subsurface(self.image_rect)
-            self.last_frame_update_time = ticks
-
         if not self.eaten and self.frighened:
             is_flash = self.game.pellet_time_seconds < 2 and ticks % (2 * self.flash_speed_ms) - self.flash_speed_ms > 0
 
-            frightened_image = self.spritesheet.subsurface(
-                pygame.Rect(
-                    self.image_rect.left,
-                    self.sprite_size * (5 if is_flash else 4),
-                    self.sprite_size,
-                    self.sprite_size
-                )
-            )
+            # frightened_image = self.spritesheet.subsurface(
+            #     pygame.Rect(
+            #         self.image.left,
+            #         self.sprite_size * (5 if is_flash else 4),
+            #         self.sprite_size,
+            #         self.sprite_size
+            #     )
+            # )
 
-            surface.blit(frightened_image, self.rect)
+            # surface.blit(frightened_image, self.rect)
             return
 
         if not self.eaten:
-            surface.blit(self.image, self.rect)
+            self.image.draw(surface)
 
         for eye in self.eyes:
             eye.draw(surface)
