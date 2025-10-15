@@ -1,5 +1,5 @@
 from pygame import Vector2
-from ghost import Ghost
+from sprite.ghost import Ghost
 
 
 class Pinky(Ghost):

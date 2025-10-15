@@ -5,15 +5,15 @@ from pygame import Vector2
 
 from pygame.locals import *
 
-from blinky import Blinky
-from clyde import Clyde
-from inky import Inky
+from sprite.blinky import Blinky
+from sprite.clyde import Clyde
+from sprite.inky import Inky
 from main import DISPLAY_SURFACE, FPS, load_image, SCREEN_WIDTH, FONT_NUMBERS, COLOR_FONT, SCREEN_HEIGHT, DRAW_SURFACE
-from pacman import Pacman
-from pinky import Pinky
-from tile import Tile
-from tilemap import Tilemap
-from tileset import Tileset
+from sprite.pacman import Pacman
+from sprite.pinky import Pinky
+from world.tile import Tile
+from world.tilemap import Tilemap
+from world.tileset import Tileset
 
 
 class Game:
@@ -32,7 +32,7 @@ class Game:
 
     def __init__(self):
         self.deltatime = 0
-        self.tilemap = Tilemap("./maps/original.json", Tileset("./images/tileset.png"))
+        self.tilemap = Tilemap("data/map.json", Tileset("images/tileset.png"))
         self.pacman = Pacman(self, self._load_start_position(Tile.PLAYER_START) + Vector2(self.tilemap.tile_size - 1,
                                                                                           self.tilemap.tile_size / 2))
         self.pellet_time_seconds = 0
@@ -41,7 +41,7 @@ class Game:
         self.ghost_eaten_points = self.ghost_eaten_base_value
         self.lives = 3
 
-        with open("./high_score.json", 'r') as f:
+        with open("data/high_score.json", 'r') as f:
             self.high_score = json.load(f)["high_score"]
 
         blinky = Blinky(self, self._load_start_position(Tile.GHOST_START))
@@ -169,7 +169,7 @@ class Game:
         print(self.score)
 
         if self.score > self.high_score:
-            with open("./high_score.json", 'w') as f:
+            with open("data/high_score.json", 'w') as f:
                 json.dump({"high_score": self.score}, f)
 
         pygame.quit()

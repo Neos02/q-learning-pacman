@@ -4,16 +4,16 @@ import random
 import pygame
 
 from pygame import Vector2, SurfaceType
-from direction import Direction
-from entity import Entity
+from utils.direction import Direction
+from sprite.entity import Entity
 from main import load_image, FPS
-from tile import Tile
+from world.tile import Tile
 
 
 class Ghost(Entity):
     abc.__metaclass__ = abc.ABCMeta
 
-    spritesheet = load_image("./images/ghosts.png")
+    spritesheet = load_image("images/ghosts.png")
     sprite_size = 14
 
     eye_size = (4, 5)

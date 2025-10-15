@@ -1,11 +1,10 @@
 import json
-
 import numpy as np
 import pygame
-from pygame import Vector2, SurfaceType
 
-from tile import Tile
-from tileset import Tileset
+from pygame import Vector2, SurfaceType
+from world.tile import Tile
+from world.tileset import Tileset
 
 
 class Tilemap:

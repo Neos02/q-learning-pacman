@@ -1,8 +1,8 @@
 import math
 
 from pygame import Vector2
-from ghost import Ghost
-from tile import Tile
+from sprite.ghost import Ghost
+from world.tile import Tile
 
 
 class Clyde(Ghost):

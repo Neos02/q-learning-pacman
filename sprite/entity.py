@@ -3,9 +3,9 @@ import abc
 
 from pygame import Vector2, SurfaceType
 
-from direction import Direction
+from utils.direction import Direction
 from main import FPS, SCREEN_WIDTH, SCREEN_HEIGHT
-from tile import Tile
+from world.tile import Tile
 
 
 class Entity(pygame.sprite.Sprite):

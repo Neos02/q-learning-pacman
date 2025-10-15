@@ -2,14 +2,14 @@ import pygame
 from pygame import Vector2, SurfaceType
 from pygame.locals import *
 
-from direction import Direction
-from entity import Entity
+from utils.direction import Direction
+from sprite.entity import Entity
 from main import load_image
-from tile import Tile
+from world.tile import Tile
 
 
 class Pacman(Entity):
-    spritesheet = load_image("./images/pacman.png")
+    spritesheet = load_image("images/pacman.png")
     sprite_size = 13
     transparent_tiles = [Tile.AIR, Tile.SMALL_DOT, Tile.BIG_DOT, Tile.GHOST_SLOW, Tile.GHOST_NO_UPWARD_TURN,
                          Tile.GHOST_NO_UPWARD_TURN_DOT]
