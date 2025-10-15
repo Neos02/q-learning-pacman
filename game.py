@@ -1,7 +1,7 @@
 import json
 import sys
 import pygame
-import numpy as np
+from pygame import Vector2
 
 from pygame.locals import *
 
@@ -49,13 +49,13 @@ class Game:
         clyde = Clyde(self, self._load_start_position(Tile.GHOST_START))
         self.ghosts = [clyde, inky, pinky, blinky]
 
-    def _move(self):
+    def _move(self) -> None:
         self.pacman.move(self.deltatime)
-        pacman_tile = self.pacman.get_tile_coordinates(*self.pacman.rect.center)
+        pacman_tile = self.pacman.get_current_tile_coordinates()
 
         for ghost in self.ghosts:
             ghost.move(self.deltatime)
-            ghost_tile = ghost.get_tile_coordinates(*ghost.rect.center)
+            ghost_tile = ghost.get_current_tile_coordinates()
 
             if ghost_tile == pacman_tile:
                 if ghost.frighened:
@@ -83,7 +83,7 @@ class Game:
                     self.dot_timer_seconds = self.dot_timer_max_value
                     break
 
-    def _draw(self):
+    def _draw(self) -> None:
         DRAW_SURFACE.fill((0, 0, 0))
 
         self.tilemap.draw(DRAW_SURFACE)
@@ -110,30 +110,29 @@ class Game:
         pygame.transform.scale(DRAW_SURFACE, DISPLAY_SURFACE.get_size(), DISPLAY_SURFACE)
         pygame.display.flip()
 
-    def run(self):
+    def run(self) -> None:
         while 1:
             Game.handle_events()
             self._move()
             self._draw()
             self.deltatime = pygame.time.Clock().tick(FPS) / 1000
 
-    def _load_start_position(self, tile):
-        position = np.where(self.tilemap.map == tile.value)
-        tile_x = position[1][0]
-        tile_y = position[0][0]
+    def _load_start_position(self, tile: Tile) -> Vector2:
+        tile_coordinates = self.tilemap.find_tile(tile)
+        tile_x, tile_y = tile_coordinates
 
         if tile == Tile.GHOST_START and \
-                (self.tilemap.get_tile(tile_x - 1, tile_y) is Tile.GHOST_HOUSE or
-                 self.tilemap.get_tile(tile_x + 1, tile_y) is Tile.GHOST_HOUSE or
-                 self.tilemap.get_tile(tile_x, tile_y - 1) is Tile.GHOST_HOUSE or
-                 self.tilemap.get_tile(tile_x, tile_y + 1) is Tile.GHOST_HOUSE):
-            self.tilemap.set_tile(tile_x, tile_y, Tile.GHOST_HOUSE)
+                (self.tilemap.get_tile(Vector2(tile_x - 1, tile_y)) is Tile.GHOST_HOUSE or
+                 self.tilemap.get_tile(Vector2(tile_x + 1, tile_y)) is Tile.GHOST_HOUSE or
+                 self.tilemap.get_tile(Vector2(tile_x, tile_y - 1)) is Tile.GHOST_HOUSE or
+                 self.tilemap.get_tile(Vector2(tile_x, tile_y + 1)) is Tile.GHOST_HOUSE):
+            self.tilemap.set_tile(tile_coordinates, Tile.GHOST_HOUSE)
         else:
-            self.tilemap.set_tile(tile_x, tile_y, Tile.AIR)
+            self.tilemap.set_tile(tile_coordinates, Tile.AIR)
 
-        return tile_x * self.tilemap.tile_size, tile_y * self.tilemap.tile_size
+        return tile_coordinates * self.tilemap.tile_size
 
-    def enter_frightened_mode(self):
+    def enter_frightened_mode(self) -> None:
         self.pellet_time_seconds = 6
 
         for ghost in self.ghosts:
@@ -142,12 +141,12 @@ class Game:
                 ghost.reverse_direction = True
                 ghost.frighened = True
 
-    def eat_small_dot(self, tile_x, tile_y):
+    def eat_small_dot(self, tile_coordinates: Vector2) -> None:
 
-        if self.tilemap.get_tile(tile_x, tile_y) == Tile.GHOST_NO_UPWARD_TURN_DOT:
-            self.tilemap.set_tile(tile_x, tile_y, Tile.GHOST_NO_UPWARD_TURN)
+        if self.tilemap.get_tile(tile_coordinates) == Tile.GHOST_NO_UPWARD_TURN_DOT:
+            self.tilemap.set_tile(tile_coordinates, Tile.GHOST_NO_UPWARD_TURN)
         else:
-            self.tilemap.set_tile(tile_x, tile_y, Tile.AIR)
+            self.tilemap.set_tile(tile_coordinates, Tile.AIR)
 
         self.dot_timer_seconds = self.dot_timer_max_value
         self.score += 10
@@ -157,15 +156,15 @@ class Game:
                 ghost.dot_counter += 1
                 break
 
-    def eat_big_dot(self, tile_x, tile_y):
-        self.tilemap.set_tile(tile_x, tile_y, Tile.AIR)
+    def eat_big_dot(self, tile_coordinates: Vector2) -> None:
+        self.tilemap.set_tile(tile_coordinates, Tile.AIR)
         self.enter_frightened_mode()
         self.score += 50
 
-    def die(self):
+    def die(self) -> None:
         self.lives -= 1
 
-    def game_over(self):
+    def game_over(self) -> None:
         print(self.score)
 
         if self.score > self.high_score:
@@ -176,7 +175,7 @@ class Game:
         sys.exit()
 
     @staticmethod
-    def handle_events():
+    def handle_events() -> None:
         for event in pygame.event.get():
             if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
                 pygame.quit()

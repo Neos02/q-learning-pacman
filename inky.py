@@ -15,11 +15,11 @@ class Inky(Ghost):
         target_tile_x, target_tile_y = self.get_tile_coordinates(*self.game.pacman.rect.center)
         blinky_tile_x, blinky_tile_y = self.get_tile_coordinates(*self.blinky.rect.center)
 
-        if self.game.pacman.velocity[1] < 0:
+        if self.game.pacman.direction[1] < 0:
             target_tile_x -= 2
 
-        target_tile_x += 2 * self._get_direction(self.game.pacman.velocity[0])
-        target_tile_y += 2 * self._get_direction(self.game.pacman.velocity[1])
+        target_tile_x += 2 * self._get_direction(self.game.pacman.direction[0])
+        target_tile_y += 2 * self._get_direction(self.game.pacman.direction[1])
 
         target_tile_x += target_tile_x - blinky_tile_x
         target_tile_y += target_tile_y - blinky_tile_y

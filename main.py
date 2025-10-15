@@ -2,8 +2,6 @@ import pygame
 
 from pygame.locals import *
 
-from vector import Vector
-
 pygame.init()
 
 FPS = 60

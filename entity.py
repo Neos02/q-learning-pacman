@@ -1,6 +1,8 @@
 import pygame
 import abc
 
+from pygame import Vector2, SurfaceType
+
 from main import FPS
 from tile import Tile
 
@@ -14,53 +16,57 @@ class Entity(pygame.sprite.Sprite):
     transparent_tiles = [Tile.AIR, Tile.SMALL_DOT, Tile.BIG_DOT, Tile.GHOST_SLOW]
     animation_frame_length_ms = 60
 
-    def __init__(self, game, start_pos=(0, 0), image_offset_left=0):
+    def __init__(self, game, start_position: Vector2 = Vector2(0, 0), image_offset_left: int = 0):
         super().__init__()
-        self.rect = pygame.Rect(0, 0, self.sprite_size, self.sprite_size)
-        self.image_rect = self.rect.copy()
-        self.image_rect.left = image_offset_left
+        self.start_position = Vector2(
+            start_position.x + game.tilemap.tile_size - 1,
+            start_position.y + game.tilemap.tile_size / 2
+        )
+        self._position = self.start_position.copy()
+        self.rect = pygame.Rect(self.position.x, self.position.y, self.sprite_size, self.sprite_size)
+        self.image_rect = pygame.Rect(image_offset_left, 0, self.sprite_size, self.sprite_size)
         self.image = self.spritesheet.subsurface(self.image_rect)
-        self.velocity = (0, 0)
-        self.start_pos = (start_pos[0] + 2, start_pos[1] - 2)
-        self.rect.move_ip(*self.start_pos)
+        self.direction = Vector2(0, 0)
         self.game = game
         self.last_frame_update_time = 0
 
-    def get_tile_coordinates(self, center_x, center_y):
-        return int(center_x // self.game.tilemap.tile_size), int(center_y // self.game.tilemap.tile_size)
+    def get_current_tile_coordinates(self) -> Vector2:
+        return self.game.tilemap.get_tile_coordinates(self.position)
 
-    def _realign(self, realign_x=True, realign_y=True):
-        current_tile_x, current_tile_y = self.get_tile_coordinates(self.rect.centerx, self.rect.centery)
+    def _align_to_grid(self, x: bool = True, y: bool = True) -> None:
+        current_tile = self.get_current_tile_coordinates()
 
-        if realign_x:
-            self.rect.centerx = current_tile_x * self.game.tilemap.tile_size + self.game.tilemap.tile_size / 2
+        if x:
+            self.position.x = (current_tile.x + 0.5) * self.game.tilemap.tile_size
 
-        if realign_y:
-            self.rect.centery = current_tile_y * self.game.tilemap.tile_size + self.game.tilemap.tile_size / 2
+        if y:
+            self.position.y = (current_tile.y + 0.5) * self.game.tilemap.tile_size
 
-    def _is_in_bounds(self, tile_x, tile_y):
-        h, w = self.game.tilemap.map.shape
-        return 0 <= tile_x < w and 0 <= tile_y < h
-
-    def _get_next_tile(self):
-        direction_x, direction_y = self._get_direction(self.velocity[0]), self._get_direction(self.velocity[1])
-        current_tile_x, current_tile_y = self.get_tile_coordinates(self.rect.centerx, self.rect.centery)
+    def _get_next_tile_coordinates(self) -> Vector2:
+        current_tile_coordinates = self.get_current_tile_coordinates()
         map_h, map_w = self.game.tilemap.map.shape
+        next_tile_coordinates = current_tile_coordinates + self.direction
 
-        return (current_tile_x + direction_x) % map_w, (current_tile_y + direction_y) % map_h
+        return Vector2(next_tile_coordinates.x % map_w, next_tile_coordinates.y % map_h)
+
+    @property
+    def position(self) -> Vector2:
+        return self._position
+
+    @position.setter
+    def position(self, position: Vector2):
+        self._position = position
+        self.rect.centerx = int(self._position.x)
+        self.rect.centery = int(self._position.y)
 
     @abc.abstractmethod
-    def draw(self, surface):
+    def draw(self, surface: SurfaceType) -> None:
         return
 
     @abc.abstractmethod
-    def move(self, deltatime):
+    def move(self, deltatime: float) -> None:
         return
 
     @abc.abstractmethod
-    def _get_speed(self):
+    def _get_speed(self) -> float:
         return self.base_speed
-
-    @staticmethod
-    def _get_direction(value):
-        return 1 if value > 0 else -1 if value < 0 else 0
