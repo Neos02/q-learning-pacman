@@ -142,20 +142,12 @@ class Ghost(Entity):
             self._choose_next_direction()
 
         self.position = next_position
-        self.rect.center = self.position
         self._align_to_grid(
             self.direction.x == 0 and self.direction.y != 0,
             self.direction.x != 0 and self.direction.y == 0
         )
 
-        # wrap when off the screen horizontally
-        if self.rect.right < 0:
-            self.rect.move_ip(SCREEN_WIDTH + self.rect.width, 0)
-
-        if self.rect.left > SCREEN_WIDTH:
-            self.rect.move_ip(-SCREEN_WIDTH - self.rect.width, 0)
-
-    def _choose_target(self, tile_choices) -> Vector2:
+    def _choose_target(self, tile_choices: list[Vector2]) -> Vector2:
         if self.eaten:
             return self.game.tilemap.find_tile(Tile.GHOST_HOME)
         elif self.is_in_ghost_house():
@@ -182,8 +174,8 @@ class Ghost(Entity):
             tile_choices = [
                 Vector2(self.next_tile.x, self.next_tile.y - 1),
                 Vector2(self.next_tile.x, self.next_tile.y + 1),
-                Vector2(self.next_tile.x - 1, self.next_tile.y - 1),
-                Vector2(self.next_tile.x + 1, self.next_tile.y - 1),
+                Vector2(self.next_tile.x - 1, self.next_tile.y),
+                Vector2(self.next_tile.x + 1, self.next_tile.y),
             ]
             min_distance = math.inf
             current_tile_x, current_tile_y = self.get_current_tile_coordinates()
@@ -192,8 +184,8 @@ class Ghost(Entity):
 
             for tile_coords in tile_choices:
                 tile = self.game.tilemap.get_tile(tile_coords)
-                is_current_tile = (tile_coords[0] % map_w, tile_coords[1] % map_h) == (current_tile_x % map_w,
-                                                                                       current_tile_y % map_h)
+                is_current_tile = (tile_coords.x % map_w, tile_coords.y % map_h) == (current_tile_x % map_w,
+                                                                                     current_tile_y % map_h)
 
                 if self._is_transparent_tile(tile, tile_coords) and (not is_current_tile or self.reverse_direction):
                     self.reverse_direction = False
@@ -201,8 +193,7 @@ class Ghost(Entity):
 
                     if distance < min_distance:
                         min_distance = distance
-                        self.next_velocity = ((tile_coords[0] - self.next_tile[0]) * self.speed,
-                                              (tile_coords[1] - self.next_tile[1]) * self.speed)
+                        self.next_direction = tile_coords - self.next_tile
 
     def is_in_ghost_house(self) -> bool:
         return self.game.tilemap.get_tile(self.get_current_tile_coordinates()) in [Tile.GHOST_HOUSE, Tile.GHOST_GATE]
@@ -217,13 +208,13 @@ class Ghost(Entity):
 
     def _get_speed(self) -> float:
         if self.eaten:
-            return 2
+            return self.base_speed * 2
         elif self.frighened:
-            return 0.625
+            return self.base_speed * 0.625
         elif self.game.tilemap.get_tile(self.get_current_tile_coordinates()) == Tile.GHOST_SLOW:
-            return 0.5
+            return self.base_speed * 0.5
 
-        return 0.9375
+        return self.base_speed * 0.9375
 
     @abc.abstractmethod
     def _target_pacman(self) -> Vector2:

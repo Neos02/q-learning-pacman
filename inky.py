@@ -1,6 +1,5 @@
-import math
+from pygame import Vector2
 
-from entity import Entity
 from ghost import Ghost
 
 
@@ -11,17 +10,11 @@ class Inky(Ghost):
         self.blinky = blinky
         self.dot_limit = 30
 
-    def _target_pacman(self):
-        target_tile_x, target_tile_y = self.get_tile_coordinates(*self.game.pacman.rect.center)
-        blinky_tile_x, blinky_tile_y = self.get_tile_coordinates(*self.blinky.rect.center)
+    def _target_pacman(self) -> Vector2:
+        target_tile = self.game.pacman.get_current_tile_coordinates()
+        blinky_tile = self.blinky.get_current_tile_coordinates()
 
         if self.game.pacman.direction[1] < 0:
-            target_tile_x -= 2
+            target_tile.x -= 2
 
-        target_tile_x += 2 * self._get_direction(self.game.pacman.direction[0])
-        target_tile_y += 2 * self._get_direction(self.game.pacman.direction[1])
-
-        target_tile_x += target_tile_x - blinky_tile_x
-        target_tile_y += target_tile_y - blinky_tile_y
-
-        return target_tile_x, target_tile_y
+        return 2 * (target_tile + self.game.pacman.direction) - blinky_tile

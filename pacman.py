@@ -1,5 +1,5 @@
 import pygame
-from pygame import Vector2
+from pygame import Vector2, SurfaceType
 
 from pygame.locals import *
 
@@ -20,7 +20,7 @@ class Pacman(Entity):
         self.queued_direction = Vector2(0, 0)
         self.freeze_frames = 0
 
-    def draw(self, surface):
+    def draw(self, surface: SurfaceType) -> None:
         ticks = pygame.time.get_ticks()
 
         # make pacman be closed when not moving
@@ -44,7 +44,7 @@ class Pacman(Entity):
 
         surface.blit(self.image, self.rect)
 
-    def move(self, deltatime):
+    def move(self, deltatime: float) -> None:
         current_tile = self.get_current_tile_coordinates()
 
         # only allow input when player is on screen
@@ -63,12 +63,12 @@ class Pacman(Entity):
         else:
             self._handle_collisions_and_update_position(self.position + self.direction * self._get_speed() * deltatime)
 
-    def _handle_collisions_and_update_position(self, position: Vector2):
+    def _handle_collisions_and_update_position(self, position: Vector2) -> None:
         current_tile = self.get_current_tile_coordinates()
         next_tile = self._get_next_tile_coordinates()
 
         if not self._has_collision(current_tile) and not self._has_collision(next_tile):
-            self.position = Vector2(position.x % SCREEN_WIDTH, position.y % SCREEN_HEIGHT)
+            self.position = Vector2(position.x, position.y)
             tile = self.game.tilemap.get_tile(current_tile)
 
             if tile == Tile.SMALL_DOT or tile == Tile.GHOST_NO_UPWARD_TURN_DOT:
@@ -91,7 +91,7 @@ class Pacman(Entity):
 
         return False
 
-    def _handle_input(self):
+    def _handle_input(self) -> None:
         pressed_keys = pygame.key.get_pressed()
 
         if pressed_keys[K_a]:
@@ -103,7 +103,7 @@ class Pacman(Entity):
         elif pressed_keys[K_s]:
             self.queued_direction = Direction.DOWN
 
-    def _get_speed(self):
+    def _get_speed(self) -> float:
         if self.game.pellet_time_seconds > 0:
             return self.base_speed * 1.125
 

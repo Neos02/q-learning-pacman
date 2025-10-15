@@ -3,7 +3,7 @@ import abc
 
 from pygame import Vector2, SurfaceType
 
-from main import FPS
+from main import FPS, SCREEN_WIDTH, SCREEN_HEIGHT
 from tile import Tile
 
 
@@ -55,7 +55,7 @@ class Entity(pygame.sprite.Sprite):
 
     @position.setter
     def position(self, position: Vector2):
-        self._position = position
+        self._position = Vector2(position.x % SCREEN_WIDTH, position.y % SCREEN_HEIGHT)
         self.rect.centerx = int(self._position.x)
         self.rect.centery = int(self._position.y)
 
