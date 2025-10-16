@@ -3,9 +3,8 @@ from pygame import Vector2, SurfaceType
 from pygame.locals import *
 
 from sprite.animated_image import AnimatedImage
-from utils.direction import Direction
 from sprite.entity import Entity
-from main import load_image
+from utils.direction import Direction
 from world.tile import Tile
 
 
@@ -18,7 +17,7 @@ class Pacman(Entity):
         super().__init__(
             game,
             start_position,
-            AnimatedImage("images/pacman.png", Vector2(self.sprite_size), 60)
+            AnimatedImage("images/pacman.png", start_position, Vector2(self.sprite_size), 60)
         )
         self.freeze_frames = 0
 

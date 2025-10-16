@@ -7,16 +7,23 @@ from utils.direction import Direction
 
 class AnimatedImage(Sprite):
 
-    def __init__(self, path: str, sprite_size: Vector2, frame_time_ms: int = 1000, sprite_index: int = 0,
+    def __init__(self, path: str, position: Vector2, sprite_size: Vector2, frame_time_ms: int = 1000,
+                 sprite_index: int = 0,
                  frame_index: int = 0, direction: Direction = Direction.LEFT) -> None:
         super().__init__()
+        self._position = position
         self.spritesheet = pygame.image.load(path).convert_alpha()
         self.sprite_size = sprite_size
         self._frame_index = frame_index
         self.frame_count = self.spritesheet.get_width() / self.sprite_size.x
         self.sprite_index = sprite_index
         self.image = None
-        self.rect = pygame.Rect(0, 0, sprite_size.x, sprite_size.y)
+        self.rect = pygame.Rect(
+            position.x - sprite_size.x / 2,
+            position.y - sprite_size.y / 2,
+            sprite_size.x,
+            sprite_size.y
+        )
         self.frame_time_ms = frame_time_ms
         self.last_frame_time_ms = 0
         self.direction = direction
@@ -46,6 +53,16 @@ class AnimatedImage(Sprite):
                 self.image = pygame.transform.rotate(self.spritesheet.subsurface(image_rect), 180)
 
         surface.blit(self.image, self.rect)
+
+    @property
+    def position(self) -> Vector2:
+        return self._position
+
+    @position.setter
+    def position(self, position: Vector2):
+        self._position = position
+        self.rect.centerx = int(position.x)
+        self.rect.centery = int(position.y)
 
     @property
     def frame_index(self) -> int:

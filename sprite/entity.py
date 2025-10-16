@@ -65,7 +65,7 @@ class Entity(pygame.sprite.Sprite):
         self.rect.centery = int(self._position.y)
 
         if self.image is not None:
-            self.image.rect.center = self.rect.center
+            self.image.position = self._position
 
     @abc.abstractmethod
     def move(self, deltatime: float) -> None:

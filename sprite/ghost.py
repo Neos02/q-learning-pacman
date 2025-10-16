@@ -25,7 +25,7 @@ class Ghost(Entity):
         super().__init__(
             game,
             start_position,
-            AnimatedImage("images/ghosts.png", Vector2(self.sprite_size), 120, sprite_index)
+            AnimatedImage("images/ghosts.png", start_position, Vector2(self.sprite_size), 120, sprite_index)
         )
         self.next_tile = None
         self.queued_direction = Direction.LEFT
