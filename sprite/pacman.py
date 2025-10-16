@@ -47,6 +47,8 @@ class Pacman(Entity):
         else:
             self._handle_collisions_and_update_position(self.position + self.direction * self._get_speed() * deltatime)
 
+        self.image.move(deltatime)
+
     def _handle_collisions_and_update_position(self, position: Vector2) -> None:
         current_tile = self.get_current_tile_coordinates()
         next_tile = self._get_next_tile_coordinates()

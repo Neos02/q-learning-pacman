@@ -9,24 +9,19 @@ from sprite.animated_image import AnimatedImage
 from sprite.ghost_eye import GhostEye
 from utils.direction import Direction
 from sprite.entity import Entity
-from main import load_image, FPS
+from main import FPS
 from world.tile import Tile
 
 
 class Ghost(Entity):
     abc.__metaclass__ = abc.ABCMeta
-    spritesheet = load_image("images/ghosts.png")
     sprite_size = 14
     transparent_tiles = [Tile.AIR, Tile.SMALL_DOT, Tile.BIG_DOT, Tile.GHOST_HOUSE, Tile.GHOST_SLOW, Tile.GHOST_HOME]
     speed = FPS
     flash_speed_ms = 300
 
     def __init__(self, game, start_position: Vector2 = Vector2(0, 0), sprite_index: int = 0) -> None:
-        super().__init__(
-            game,
-            start_position,
-            AnimatedImage("images/ghosts.png", start_position, Vector2(self.sprite_size), 120, sprite_index)
-        )
+        super().__init__(game, start_position, None)
         self.next_tile = None
         self.queued_direction = Direction.LEFT
         self.eaten = False
@@ -37,6 +32,7 @@ class Ghost(Entity):
         self.reverse_direction = False
         self.is_released = False
         self.eyes = [GhostEye(self.position, Vector2(-3, -3)), GhostEye(self.position, Vector2(3, -3))]
+        self.images = self._load_images(sprite_index)
 
     def draw(self, surface: SurfaceType) -> None:
         ticks = pygame.time.get_ticks()
@@ -44,23 +40,18 @@ class Ghost(Entity):
         if not self.eaten and self.frighened:
             is_flash = self.game.pellet_time_seconds < 2 and ticks % (2 * self.flash_speed_ms) - self.flash_speed_ms > 0
 
-            # frightened_image = self.spritesheet.subsurface(
-            #     pygame.Rect(
-            #         self.image.left,
-            #         self.sprite_size * (5 if is_flash else 4),
-            #         self.sprite_size,
-            #         self.sprite_size
-            #     )
-            # )
+            if is_flash:
+                self.image = self.images[2]
+            else:
+                self.image = self.images[1]
+        else:
+            self.image = self.images[0]
 
-            # surface.blit(frightened_image, self.rect)
-            return
+        self.image.draw(surface)
 
-        if not self.eaten:
-            self.image.draw(surface)
-
-        for eye in self.eyes:
-            eye.draw(surface)
+        if self.eaten or not self.frighened:
+            for eye in self.eyes:
+                eye.draw(surface)
 
     def move(self, deltatime: float) -> None:
         if self.dot_counter == self.dot_limit:
@@ -91,6 +82,10 @@ class Ghost(Entity):
 
         for eye in self.eyes:
             eye.move(self.position, self.direction)
+
+        for image in self.images:
+            image.move(deltatime)
+            image.position = self.position
 
     def _choose_target(self, tile_choices: list[Vector2]) -> Vector2:
         if self.eaten:
@@ -160,6 +155,16 @@ class Ghost(Entity):
             return self.base_speed * 0.5
 
         return self.base_speed * 0.9375
+
+    def _load_images(self, sprite_index: int = 0) -> list[AnimatedImage]:
+        image_path = "images/ghosts.png"
+        frame_time_ms = 120
+
+        return [
+            AnimatedImage(image_path, self.position, Vector2(self.sprite_size), frame_time_ms, sprite_index),
+            AnimatedImage(image_path, self.position, Vector2(self.sprite_size), frame_time_ms, 4),
+            AnimatedImage(image_path, self.position, Vector2(self.sprite_size), frame_time_ms, 5)
+        ]
 
     @abc.abstractmethod
     def _target_pacman(self) -> Vector2:

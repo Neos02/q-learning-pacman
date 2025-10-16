@@ -25,16 +25,10 @@ class AnimatedImage(Sprite):
             sprite_size.y
         )
         self.frame_time_ms = frame_time_ms
-        self.last_frame_time_ms = 0
+        self.time_since_last_frame = 0
         self.direction = direction
 
     def draw(self, surface: SurfaceType):
-        ticks = pygame.time.get_ticks()
-
-        if ticks - self.last_frame_time_ms > self.frame_time_ms:
-            self.last_frame_time_ms = ticks
-            self.frame_index = (self.frame_index + 1) % self.frame_count
-
         image_rect = pygame.Rect(
             self.frame_index * self.sprite_size.x,
             self.sprite_index * self.sprite_size.y,
@@ -54,6 +48,13 @@ class AnimatedImage(Sprite):
 
         surface.blit(self.image, self.rect)
 
+    def move(self, deltatime: float) -> None:
+        self.time_since_last_frame += deltatime * 1000
+
+        if self.time_since_last_frame >= self.frame_time_ms:
+            self.time_since_last_frame -= self.frame_time_ms
+            self.frame_index = (self.frame_index + 1) % self.frame_count
+
     @property
     def position(self) -> Vector2:
         return self._position
@@ -71,4 +72,4 @@ class AnimatedImage(Sprite):
     @frame_index.setter
     def frame_index(self, frame_index: int):
         self._frame_index = frame_index % self.frame_count
-        self.last_frame_time_ms = pygame.time.get_ticks()
+        self.time_since_last_frame = 0
