@@ -4,7 +4,7 @@ from pygame.locals import *
 
 from sprite.animated_image import AnimatedImage
 from sprite.entity import Entity
-from utils.direction import Direction
+from enums.direction import Direction
 from world.tile import Tile
 
 

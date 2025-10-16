@@ -4,7 +4,7 @@ import abc
 from pygame import Vector2, SurfaceType
 
 from sprite.animated_image import AnimatedImage
-from utils.direction import Direction
+from enums.direction import Direction
 from main import FPS, SCREEN_WIDTH, SCREEN_HEIGHT
 from world.tile import Tile
 
@@ -37,6 +37,9 @@ class Entity(pygame.sprite.Sprite):
 
     def get_current_tile_coordinates(self) -> Vector2:
         return self.game.tilemap.get_tile_coordinates(self.position)
+
+    def get_current_tile(self) -> Tile:
+        return self.game.tilemap.get_tile(self.get_current_tile_coordinates())
 
     def _align_to_grid(self, x: bool = True, y: bool = True) -> None:
         current_tile = self.get_current_tile_coordinates()

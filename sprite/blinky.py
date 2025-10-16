@@ -1,5 +1,5 @@
 from pygame import Vector2
-
+from enums.ghost_state import GhostState
 from sprite.ghost import Ghost
 
 

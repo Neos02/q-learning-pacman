@@ -5,6 +5,7 @@ from pygame import Vector2
 
 from pygame.locals import *
 
+from enums.ghost_state import GhostState
 from sprite.blinky import Blinky
 from sprite.clyde import Clyde
 from sprite.inky import Inky
@@ -58,12 +59,11 @@ class Game:
             ghost_tile = ghost.get_current_tile_coordinates()
 
             if ghost_tile == pacman_tile:
-                if ghost.frighened:
-                    if not ghost.eaten:
-                        ghost.eaten = True
-                        self.score += self.ghost_eaten_points
-                        self.ghost_eaten_points *= 2
-                else:
+                if ghost.state in [GhostState.FRIGHTENED, GhostState.REVERSE]:
+                    ghost.eat()
+                    self.score += self.ghost_eaten_points
+                    self.ghost_eaten_points *= 2
+                elif ghost.state != GhostState.EATEN:
                     self.game_over()
 
         self.pellet_time_seconds -= self.deltatime
@@ -72,14 +72,15 @@ class Game:
             self.ghost_eaten_points = self.ghost_eaten_base_value
 
             for ghost in self.ghosts:
-                ghost.frighened = False
+                if ghost.state not in [GhostState.HOME, GhostState.EATEN]:
+                    ghost.state = GhostState.CHASE
 
         self.dot_timer_seconds -= self.deltatime
 
         if self.dot_timer_seconds <= 0:
             for ghost in reversed(self.ghosts):
-                if ghost.is_in_ghost_house():
-                    ghost.is_released = True
+                if ghost.state == GhostState.HOME:
+                    ghost.released = True
                     self.dot_timer_seconds = self.dot_timer_max_value
                     break
 
@@ -133,17 +134,7 @@ class Game:
         return (tile_coordinates * self.tilemap.tile_size +
                 Vector2(0, self.tilemap.tile_size / 2))
 
-    def enter_frightened_mode(self) -> None:
-        self.pellet_time_seconds = 6
-
-        for ghost in self.ghosts:
-            if not ghost.is_in_ghost_house():
-                ghost.next_tile = None
-                ghost.reverse_direction = True
-                ghost.frighened = True
-
     def eat_small_dot(self, tile_coordinates: Vector2) -> None:
-
         if self.tilemap.get_tile(tile_coordinates) == Tile.GHOST_NO_UPWARD_TURN_DOT:
             self.tilemap.set_tile(tile_coordinates, Tile.GHOST_NO_UPWARD_TURN)
         else:
@@ -153,14 +144,17 @@ class Game:
         self.score += 10
 
         for ghost in reversed(self.ghosts):
-            if ghost.is_in_ghost_house():
+            if ghost.state == GhostState.HOME:
                 ghost.dot_counter += 1
                 break
 
     def eat_big_dot(self, tile_coordinates: Vector2) -> None:
         self.tilemap.set_tile(tile_coordinates, Tile.AIR)
-        self.enter_frightened_mode()
         self.score += 50
+        self.pellet_time_seconds = 6
+
+        for ghost in self.ghosts:
+            ghost.frighten()
 
     def die(self) -> None:
         self.lives -= 1

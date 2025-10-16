@@ -4,7 +4,7 @@ from enum import Enum
 class Tile(Enum):
     GHOST_NO_UPWARD_TURN_DOT = -11
     GHOST_NO_UPWARD_TURN = -10
-    GHOST_HOME = -9
+    GHOST_HOUSE_FIXED = -9
     GHOST_SLOW = -8
     CLYDE_FIXED = -7
     PINKY_FIXED = -6

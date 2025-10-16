@@ -2,7 +2,7 @@ import pygame
 from pygame import Vector2, SurfaceType
 from pygame.sprite import Sprite
 
-from utils.direction import Direction
+from enums.direction import Direction
 
 
 class AnimatedImage(Sprite):

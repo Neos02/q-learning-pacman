@@ -1,12 +1,11 @@
 import abc
 import math
 import random
-import pygame
 
 from pygame import Vector2, SurfaceType
+from enums.ghost_state import GhostState
 from sprite.animated_image import AnimatedImage
 from sprite.ghost_eye import GhostEye
-from utils.direction import Direction
 from sprite.entity import Entity
 from world.tile import Tile
 
@@ -14,63 +13,56 @@ from world.tile import Tile
 class Ghost(Entity):
     abc.__metaclass__ = abc.ABCMeta
     sprite_size = 14
-    transparent_tiles = [Tile.AIR, Tile.SMALL_DOT, Tile.BIG_DOT, Tile.GHOST_HOUSE, Tile.GHOST_SLOW, Tile.GHOST_HOME]
+    transparent_tiles = [Tile.AIR, Tile.SMALL_DOT, Tile.BIG_DOT, Tile.GHOST_HOUSE, Tile.GHOST_SLOW,
+                         Tile.GHOST_HOUSE_FIXED]
     flash_speed_ms = 300
+    flash_time_ms = 1500
 
     def __init__(self, game, start_position: Vector2 = Vector2(0, 0), sprite_index: int = 0) -> None:
         super().__init__(
             game,
             start_position,
-            AnimatedImage("images/ghosts.png", start_position, Vector2(self.sprite_size), self.flash_speed_ms,
-                          sprite_index)
+            AnimatedImage(
+                "images/ghosts.png",
+                start_position,
+                Vector2(self.sprite_size),
+                120,
+                sprite_index
+            )
         )
-        self.next_tile = None
-        self.queued_direction = Direction.LEFT
-        self.eaten = False
-        self.frighened = False
-        self.dot_counter = 0
-        self.dot_limit = 0
-        self.flash_time = 0
-        self.reverse_direction = False
-        self.is_released = False
-        self.eyes = [GhostEye(self.position, Vector2(-3, -3)), GhostEye(self.position, Vector2(3, -3))]
-        self.sprite_index = sprite_index
+        self.state: GhostState = GhostState.HOME
+        self.released: bool = False
+        self.dot_counter: int = 0
+        self.dot_limit: int = 0
+        self.eyes: list[GhostEye] = [GhostEye(self.position, Vector2(-3, -3)), GhostEye(self.position, Vector2(3, -3))]
+        self.sprite_index: int = sprite_index
+        self.next_tile: Vector2 | None = None
 
     def draw(self, surface: SurfaceType) -> None:
-        ticks = pygame.time.get_ticks()
+        self._update_ghost_image()
 
-        if self._show_frightened_image():
-            is_flash = self.game.pellet_time_seconds < 2 and ticks % (2 * self.flash_speed_ms) - self.flash_speed_ms > 0
+        if self.state != GhostState.EATEN:
+            self.image.draw(surface)
 
-            if is_flash:
-                self.image.sprite_index = 5
-            else:
-                self.image.sprite_index = 4
-        else:
-            self.image.sprite_index = self.sprite_index
-
-        self.image.draw(surface)
-
-        if not self._show_frightened_image():
+        if self.state not in [GhostState.FRIGHTENED, GhostState.REVERSE]:
             for eye in self.eyes:
                 eye.draw(surface)
 
     def move(self, deltatime: float) -> None:
-        if self.dot_counter == self.dot_limit:
-            self.is_released = True
-
-        if not self.is_released:
+        if self.state == GhostState.HOME and self.dot_counter == self.dot_limit:
+            self.released = True
+        elif not self.released:
             return
 
-        current_tile_coordinates = self.get_current_tile_coordinates()
+        if self.state == GhostState.HOME and not self._is_in_ghost_house():
+            self.state = GhostState.CHASE
 
-        if self.game.tilemap.get_tile(current_tile_coordinates) == Tile.GHOST_HOME:
-            self.eaten = False
-            self.frighened = False
+        if self.state == GhostState.EATEN and self._is_in_ghost_house():
+            self.state = GhostState.HOME
 
         next_position = self.position + self.direction * self._get_speed() * deltatime
 
-        if self.next_tile is None or current_tile_coordinates == self.next_tile \
+        if self.next_tile is None or self.get_current_tile_coordinates() == self.next_tile \
                 and self._can_move_to_position(next_position):
             self.direction = self.queued_direction
             self.next_tile = self._get_next_tile_coordinates()
@@ -85,17 +77,43 @@ class Ghost(Entity):
         for eye in self.eyes:
             eye.move(self.position, self.direction)
 
-    def _choose_target(self, tile_choices: list[Vector2]) -> Vector2:
-        if self.eaten:
-            return self.game.tilemap.find_tile(Tile.GHOST_HOME)
-        elif self.is_in_ghost_house():
-            return self.game.tilemap.find_tile(Tile.GHOST_GATE)
-        elif self.reverse_direction:
-            return self.get_current_tile_coordinates() - self.direction
-        elif self.frighened:
-            return tile_choices[random.randint(0, len(tile_choices) - 1)]
+    def eat(self) -> None:
+        self.state = GhostState.EATEN
+
+    def frighten(self) -> None:
+        if self.state != GhostState.HOME:
+            self.next_tile = None
+            self.state = GhostState.REVERSE
+
+    def _is_in_ghost_house(self) -> bool:
+        return self.get_current_tile() in [Tile.GHOST_HOUSE, Tile.GHOST_HOUSE_FIXED, Tile.GHOST_GATE]
+
+    def _update_ghost_image(self) -> None:
+        if self.state in [GhostState.FRIGHTENED, GhostState.REVERSE]:
+            flash_delta = self.flash_time_ms - self.game.pellet_time_seconds * 1000
+            is_white_flash = flash_delta > 0 and flash_delta % (2 * self.flash_speed_ms) - self.flash_speed_ms > 0
+
+            if is_white_flash:
+                self.image.sprite_index = 5
+            else:
+                self.image.sprite_index = 4
         else:
-            return self._target_pacman()
+            self.image.sprite_index = self.sprite_index
+
+    def _choose_target(self, tile_choices: list[Vector2]) -> Vector2:
+        match self.state:
+            case GhostState.HOME:
+                return self.game.tilemap.find_tile(Tile.GHOST_GATE)
+            case GhostState.CHASE:
+                return self._target_pacman()
+            case GhostState.EATEN:
+                return self.game.tilemap.find_tile(Tile.GHOST_HOUSE_FIXED)
+            case GhostState.REVERSE:
+                return self.get_current_tile_coordinates() - self.direction
+            case GhostState.FRIGHTENED:
+                return tile_choices[random.randint(0, len(tile_choices) - 1)]
+            case _:
+                raise ValueError(f'Unknown ghost state: {self.state}')
 
     def _can_move_to_position(self, position: Vector2) -> bool:
         min_x = min(position.x, self.position.x)
@@ -125,37 +143,36 @@ class Ghost(Entity):
                 is_current_tile = (tile_coords.x % map_w, tile_coords.y % map_h) == (current_tile_x % map_w,
                                                                                      current_tile_y % map_h)
 
-                if self._is_transparent_tile(tile, tile_coords) and (not is_current_tile or self.reverse_direction):
-                    self.reverse_direction = False
+                if self._is_transparent_tile(tile, tile_coords) and (
+                        not is_current_tile or self.state == GhostState.REVERSE):
+                    if self.state == GhostState.REVERSE:
+                        self.state = GhostState.FRIGHTENED
+
                     distance = math.dist(tile_coords, target)
 
                     if distance < min_distance:
                         min_distance = distance
                         self.queued_direction = tile_coords - self.next_tile
 
-    def is_in_ghost_house(self) -> bool:
-        return self.game.tilemap.get_tile(self.get_current_tile_coordinates()) in [Tile.GHOST_HOUSE, Tile.GHOST_GATE]
-
     def _is_transparent_tile(self, tile: Tile, tile_coords: Vector2) -> bool:
-        is_ghost_gate_transparent = self.is_in_ghost_house() and self.is_released or self.eaten
+        is_ghost_gate_transparent = self.state in [GhostState.HOME, GhostState.EATEN]
         _, current_tile_y = self.get_current_tile_coordinates()
 
         return tile in self.transparent_tiles \
             or is_ghost_gate_transparent and tile == Tile.GHOST_GATE \
-            or current_tile_y <= tile_coords[1] and tile in [Tile.GHOST_NO_UPWARD_TURN, Tile.GHOST_NO_UPWARD_TURN_DOT]
-
-    def _show_frightened_image(self) -> bool:
-        return not self.eaten and self.frighened
+            or current_tile_y <= tile_coords.x and tile in [Tile.GHOST_NO_UPWARD_TURN, Tile.GHOST_NO_UPWARD_TURN_DOT]
 
     def _get_speed(self) -> float:
-        if self.eaten:
-            return self.base_speed * 2
-        elif self.frighened:
-            return self.base_speed * 0.625
-        elif self.game.tilemap.get_tile(self.get_current_tile_coordinates()) == Tile.GHOST_SLOW:
-            return self.base_speed * 0.5
+        match self.state:
+            case GhostState.EATEN:
+                return self.base_speed * 2
+            case GhostState.FRIGHTENED | GhostState.REVERSE:
+                return self.base_speed * 0.625
+            case _:
+                if self.game.tilemap.get_tile(self.get_current_tile_coordinates()) == Tile.GHOST_SLOW:
+                    return self.base_speed * 0.5
 
-        return self.base_speed * 0.9375
+                return self.base_speed * 0.9375
 
     @abc.abstractmethod
     def _target_pacman(self) -> Vector2:
