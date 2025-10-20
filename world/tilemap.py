@@ -53,7 +53,8 @@ class Tilemap:
         return Vector2(int(position[1][0]), int(position[0][0]))
 
     def get_tile_coordinates(self, position: Vector2) -> Vector2:
-        return position // self.tile_size
+        h, w = self.map.shape
+        return Vector2(position.x // self.tile_size % w, position.y // self.tile_size % h)
 
     def is_in_bounds(self, position: Vector2):
         h, w = self.map.shape

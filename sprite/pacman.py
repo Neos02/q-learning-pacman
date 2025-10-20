@@ -43,7 +43,7 @@ class Pacman(Entity):
 
     def _handle_collisions_and_update_position(self, position: Vector2) -> None:
         current_tile = self.get_current_tile_coordinates()
-        next_tile = self._get_next_tile_coordinates()
+        next_tile = self.game.tilemap.get_tile_coordinates(position + self.direction * self.sprite_size * 0.25)
 
         if not self._has_collision(current_tile) and not self._has_collision(next_tile):
             self.position = position
