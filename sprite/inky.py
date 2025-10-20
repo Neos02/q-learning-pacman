@@ -1,5 +1,4 @@
 from pygame import Vector2
-
 from sprite.ghost import Ghost
 
 

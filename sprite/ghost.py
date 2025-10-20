@@ -58,22 +58,22 @@ class Ghost(Entity):
         if self.state == GhostState.EATEN and self._is_in_ghost_house():
             self.state = GhostState.HOME
 
-        next_position = self.position + self.direction * self._get_speed() * deltatime
+        next_position = self.position + self._direction * self._get_speed() * deltatime
 
         if self.next_tile is None or self.get_current_tile_coordinates() == self.next_tile \
                 and self._can_move_to_position(next_position):
-            self.direction = self.queued_direction
+            self._direction = self._queued_direction
             self.next_tile = self._get_next_tile_coordinates()
             self._choose_next_direction()
 
         self.position = next_position
         self._align_to_grid(
-            self.direction.x == 0 and self.direction.y != 0,
-            self.direction.x != 0 and self.direction.y == 0
+            self._direction.x == 0 and self._direction.y != 0,
+            self._direction.x != 0 and self._direction.y == 0
         )
 
         for eye in self.eyes:
-            eye.move(self.position, self.direction)
+            eye.move(self.position, self._direction)
 
     def eat(self) -> None:
         self.state = GhostState.EATEN
@@ -107,7 +107,7 @@ class Ghost(Entity):
             case GhostState.EATEN:
                 return self.game.tilemap.find_tile(Tile.GHOST_HOUSE_FIXED)
             case GhostState.REVERSE:
-                return self.get_current_tile_coordinates() - self.direction
+                return self.get_current_tile_coordinates() - self._direction
             case GhostState.FRIGHTENED:
                 return tile_choices[random.randint(0, len(tile_choices) - 1)]
             case _:
@@ -148,7 +148,7 @@ class Ghost(Entity):
 
                     if distance < min_distance:
                         min_distance = distance
-                        self.queued_direction = tile_coords - self.next_tile
+                        self._queued_direction = tile_coords - self.next_tile
 
     def _is_transparent_tile(self, tile_coordinates: Vector2) -> bool:
         current_tile_coordinates = self.get_current_tile_coordinates()

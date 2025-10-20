@@ -20,7 +20,7 @@ class Pacman(Entity):
         self.freeze_frames = 0
 
     def draw(self, surface: SurfaceType) -> None:
-        if self.direction == Direction.NONE:
+        if self._direction == Direction.NONE:
             self.image.frame_index = 0
 
         self.image.draw(surface)
@@ -28,22 +28,22 @@ class Pacman(Entity):
     def move(self, deltatime: float) -> None:
         self._handle_input()
 
-        if not self._has_collision(self.get_current_tile_coordinates() + self.queued_direction):
-            self.direction = self.queued_direction
-            self.image.direction = self.direction
+        if not self._has_collision(self.get_current_tile_coordinates() + self._queued_direction):
+            self._direction = self._queued_direction
+            self.image.direction = self._direction
             self._align_to_grid(
-                self.direction.x == 0 and self.direction.y != 0,
-                self.direction.x != 0 and self.direction.y == 0
+                self._direction.x == 0 and self._direction.y != 0,
+                self._direction.x != 0 and self._direction.y == 0
             )
 
         if self.freeze_frames > 0:
             self.freeze_frames -= 1
         else:
-            self._handle_collisions_and_update_position(self.position + self.direction * self._get_speed() * deltatime)
+            self._attempt_move(self.position + self._direction * self._get_speed() * deltatime)
 
-    def _handle_collisions_and_update_position(self, position: Vector2) -> None:
+    def _attempt_move(self, position: Vector2) -> None:
         current_tile = self.get_current_tile_coordinates()
-        next_tile = self.game.tilemap.get_tile_coordinates(position + self.direction * self.sprite_size * 0.25)
+        next_tile = self.game.tilemap.get_tile_coordinates(position + self._direction * self.sprite_size * 0.25)
 
         if not self._has_collision(current_tile) and not self._has_collision(next_tile):
             self.position = position
@@ -57,7 +57,7 @@ class Pacman(Entity):
                 self.game.eat_big_dot(current_tile)
         else:
             self._align_to_grid()
-            self.queued_direction = Direction.NONE
+            self._direction = Direction.NONE
 
     def _has_collision(self, tile_coordinates: Vector2) -> bool:
         return self.game.tilemap.is_in_bounds(tile_coordinates) and not self._is_transparent_tile(tile_coordinates)
@@ -80,10 +80,10 @@ class Pacman(Entity):
         pressed_keys = pygame.key.get_pressed()
 
         if pressed_keys[K_a]:
-            self.queued_direction = Direction.LEFT
+            self._queued_direction = Direction.LEFT
         elif pressed_keys[K_w]:
-            self.queued_direction = Direction.UP
+            self._queued_direction = Direction.UP
         elif pressed_keys[K_d]:
-            self.queued_direction = Direction.RIGHT
+            self._queued_direction = Direction.RIGHT
         elif pressed_keys[K_s]:
-            self.queued_direction = Direction.DOWN
+            self._queued_direction = Direction.DOWN

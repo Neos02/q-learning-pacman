@@ -26,8 +26,8 @@ class Entity(pygame.sprite.Sprite):
         )
         self.image = image
         self.position = self.start_position.copy()
-        self.direction = Direction.NONE
-        self.queued_direction = Direction.NONE
+        self._direction = Direction.NONE
+        self._queued_direction = Direction.NONE
         self.game = game
 
     def draw(self, surface: SurfaceType) -> None:
@@ -55,7 +55,7 @@ class Entity(pygame.sprite.Sprite):
     def _get_next_tile_coordinates(self) -> Vector2:
         current_tile_coordinates = self.get_current_tile_coordinates()
         map_h, map_w = self.game.tilemap.map.shape
-        next_tile_coordinates = current_tile_coordinates + self.direction
+        next_tile_coordinates = current_tile_coordinates + self._direction
 
         return Vector2(next_tile_coordinates.x % map_w, next_tile_coordinates.y % map_h)
 
@@ -71,6 +71,13 @@ class Entity(pygame.sprite.Sprite):
 
         if self.image is not None:
             self.image.position = self._position
+
+    @property
+    def direction(self) -> Direction:
+        if self._direction == Direction.NONE:
+            return self._queued_direction
+
+        return self._direction
 
     @abc.abstractmethod
     def move(self, deltatime: float) -> None:
