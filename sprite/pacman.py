@@ -10,8 +10,6 @@ from world.tile import Tile
 
 class Pacman(Entity):
     sprite_size = 13
-    transparent_tiles = [Tile.AIR, Tile.SMALL_DOT, Tile.BIG_DOT, Tile.GHOST_SLOW, Tile.GHOST_NO_UPWARD_TURN,
-                         Tile.GHOST_NO_UPWARD_TURN_DOT]
 
     def __init__(self, game, start_position: Vector2 = Vector2(0, 0)):
         super().__init__(
@@ -67,13 +65,12 @@ class Pacman(Entity):
             self.queued_direction = Direction.NONE
 
     def _has_collision(self, tile_coordinates: Vector2) -> bool:
-        if self.game.tilemap is None:
-            return False
+        return self.game.tilemap.is_in_bounds(tile_coordinates) and not self._is_transparent_tile(tile_coordinates)
 
-        if self.game.tilemap.is_in_bounds(tile_coordinates):
-            return self.game.tilemap.get_tile(tile_coordinates) not in self.transparent_tiles
-
-        return False
+    def _is_transparent_tile(self, tile_coordinates: Vector2) -> bool:
+        return self.game.tilemap.get_tile(tile_coordinates) in [Tile.AIR, Tile.SMALL_DOT, Tile.BIG_DOT, Tile.GHOST_SLOW,
+                                                                Tile.GHOST_NO_UPWARD_TURN,
+                                                                Tile.GHOST_NO_UPWARD_TURN_DOT]
 
     def _handle_input(self) -> None:
         pressed_keys = pygame.key.get_pressed()

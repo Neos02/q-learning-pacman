@@ -13,8 +13,6 @@ from world.tile import Tile
 class Ghost(Entity):
     abc.__metaclass__ = abc.ABCMeta
     sprite_size = 14
-    transparent_tiles = [Tile.AIR, Tile.SMALL_DOT, Tile.BIG_DOT, Tile.GHOST_HOUSE, Tile.GHOST_SLOW,
-                         Tile.GHOST_HOUSE_FIXED]
     flash_speed_ms = 300
     flash_time_ms = 1500
 
@@ -139,12 +137,10 @@ class Ghost(Entity):
             map_h, map_w = self.game.tilemap.map.shape
 
             for tile_coords in tile_choices:
-                tile = self.game.tilemap.get_tile(tile_coords)
                 is_current_tile = (tile_coords.x % map_w, tile_coords.y % map_h) == (current_tile_x % map_w,
                                                                                      current_tile_y % map_h)
 
-                if self._is_transparent_tile(tile, tile_coords) and (
-                        not is_current_tile or self.state == GhostState.REVERSE):
+                if self._is_transparent_tile(tile_coords) and (not is_current_tile or self.state == GhostState.REVERSE):
                     if self.state == GhostState.REVERSE:
                         self.state = GhostState.FRIGHTENED
 
@@ -154,13 +150,19 @@ class Ghost(Entity):
                         min_distance = distance
                         self.queued_direction = tile_coords - self.next_tile
 
-    def _is_transparent_tile(self, tile: Tile, tile_coords: Vector2) -> bool:
-        is_ghost_gate_transparent = self.state in [GhostState.HOME, GhostState.EATEN]
-        _, current_tile_y = self.get_current_tile_coordinates()
+    def _is_transparent_tile(self, tile_coordinates: Vector2) -> bool:
+        current_tile_coordinates = self.get_current_tile_coordinates()
+        tile = self.game.tilemap.get_tile(tile_coordinates)
 
-        return tile in self.transparent_tiles \
-            or is_ghost_gate_transparent and tile == Tile.GHOST_GATE \
-            or current_tile_y <= tile_coords.x and tile in [Tile.GHOST_NO_UPWARD_TURN, Tile.GHOST_NO_UPWARD_TURN_DOT]
+        if self.state in [GhostState.HOME, GhostState.EATEN] and tile == Tile.GHOST_GATE:
+            return True
+
+        if current_tile_coordinates.y <= tile_coordinates.y \
+                and tile in [Tile.GHOST_NO_UPWARD_TURN, Tile.GHOST_NO_UPWARD_TURN_DOT]:
+            return True
+
+        return tile in [Tile.AIR, Tile.SMALL_DOT, Tile.BIG_DOT, Tile.GHOST_HOUSE, Tile.GHOST_SLOW,
+                        Tile.GHOST_HOUSE_FIXED]
 
     def _get_speed(self) -> float:
         match self.state:

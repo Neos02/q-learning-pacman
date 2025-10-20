@@ -14,7 +14,6 @@ class Entity(pygame.sprite.Sprite):
 
     base_speed = FPS
     sprite_size = 0
-    transparent_tiles = [Tile.AIR, Tile.SMALL_DOT, Tile.BIG_DOT, Tile.GHOST_SLOW]
 
     def __init__(self, game, start_position: Vector2 = Vector2(0, 0), image: AnimatedImage = None) -> None:
         super().__init__()
@@ -40,6 +39,9 @@ class Entity(pygame.sprite.Sprite):
 
     def get_current_tile(self) -> Tile:
         return self.game.tilemap.get_tile(self.get_current_tile_coordinates())
+
+    def _is_transparent_tile(self, tile_coordinates: Vector2) -> bool:
+        return self.game.tilemap.get_tile(tile_coordinates) in [Tile.AIR, Tile.SMALL_DOT, Tile.BIG_DOT, Tile.GHOST_SLOW]
 
     def _align_to_grid(self, x: bool = True, y: bool = True) -> None:
         current_tile = self.get_current_tile_coordinates()
