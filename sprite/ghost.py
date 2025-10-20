@@ -34,7 +34,7 @@ class Ghost(Entity):
         self.dot_limit: int = 0
         self.eyes: list[GhostEye] = [GhostEye(self.position, Vector2(-3, -3)), GhostEye(self.position, Vector2(3, -3))]
         self.sprite_index: int = sprite_index
-        self.next_tile: Vector2 | None = None
+        self.next_tile: Vector2 = self._get_next_tile_coordinates()
 
     def draw(self, surface: SurfaceType) -> None:
         self._update_ghost_image()
@@ -60,8 +60,7 @@ class Ghost(Entity):
 
         next_position = self.position + self._direction * self._get_speed() * deltatime
 
-        if self.next_tile is None or self.get_current_tile_coordinates() == self.next_tile \
-                and self._can_move_to_position(next_position):
+        if self.get_current_tile_coordinates() == self.next_tile and self._can_move_to_position(next_position):
             self._direction = self._queued_direction
             self.next_tile = self._get_next_tile_coordinates()
             self._choose_next_direction()
@@ -80,8 +79,8 @@ class Ghost(Entity):
 
     def frighten(self) -> None:
         if self.state != GhostState.HOME:
-            self.next_tile = None
             self.state = GhostState.REVERSE
+            self.next_tile = self._get_next_tile_coordinates()
 
     def _is_in_ghost_house(self) -> bool:
         return self.get_current_tile() in [Tile.GHOST_HOUSE, Tile.GHOST_HOUSE_FIXED, Tile.GHOST_GATE]
