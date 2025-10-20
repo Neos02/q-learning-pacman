@@ -1,7 +1,7 @@
 import pygame
+
 from pygame import Vector2, SurfaceType
 from pygame.locals import *
-
 from sprite.animated_image import AnimatedImage
 from sprite.entity import Entity
 from enums.direction import Direction
@@ -26,20 +26,16 @@ class Pacman(Entity):
         self.image.draw(surface)
 
     def move(self, deltatime: float) -> None:
-        current_tile = self.get_current_tile_coordinates()
+        self._handle_input()
 
-        # only allow input when player is on screen
-        if self.game.tilemap.is_in_bounds(current_tile):
-            self._handle_input()
-            queued_tile = current_tile + self.queued_direction
+        if not self._has_collision(self.get_current_tile_coordinates() + self.queued_direction):
+            self.direction = self.queued_direction
+            self.image.direction = self.direction
+            self._align_to_grid(
+                self.direction.x == 0 and self.direction.y != 0,
+                self.direction.x != 0 and self.direction.y == 0
+            )
 
-            if not self._has_collision(queued_tile):
-                self.direction = self.queued_direction
-                self.image.direction = self.direction
-                self._align_to_grid(
-                    self.direction.x == 0 and self.direction.y != 0,
-                    self.direction.x != 0 and self.direction.y == 0
-                )
         if self.freeze_frames > 0:
             self.freeze_frames -= 1
         else:
@@ -50,7 +46,7 @@ class Pacman(Entity):
         next_tile = self._get_next_tile_coordinates()
 
         if not self._has_collision(current_tile) and not self._has_collision(next_tile):
-            self.position = Vector2(position.x, position.y)
+            self.position = position
             tile = self.game.tilemap.get_tile(current_tile)
 
             if tile == Tile.SMALL_DOT or tile == Tile.GHOST_NO_UPWARD_TURN_DOT:
@@ -61,7 +57,6 @@ class Pacman(Entity):
                 self.game.eat_big_dot(current_tile)
         else:
             self._align_to_grid()
-            self.direction = Direction.NONE
             self.queued_direction = Direction.NONE
 
     def _has_collision(self, tile_coordinates: Vector2) -> bool:
@@ -72,7 +67,16 @@ class Pacman(Entity):
                                                                 Tile.GHOST_NO_UPWARD_TURN,
                                                                 Tile.GHOST_NO_UPWARD_TURN_DOT]
 
+    def _get_speed(self) -> float:
+        if self.game.pellet_time_seconds > 0:
+            return self.base_speed * 1.125
+
+        return self.base_speed
+
     def _handle_input(self) -> None:
+        if not self.game.tilemap.is_in_bounds(self.get_current_tile_coordinates()):
+            return
+
         pressed_keys = pygame.key.get_pressed()
 
         if pressed_keys[K_a]:
@@ -83,9 +87,3 @@ class Pacman(Entity):
             self.queued_direction = Direction.RIGHT
         elif pressed_keys[K_s]:
             self.queued_direction = Direction.DOWN
-
-    def _get_speed(self) -> float:
-        if self.game.pellet_time_seconds > 0:
-            return self.base_speed * 1.125
-
-        return self.base_speed
