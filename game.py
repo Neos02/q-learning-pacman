@@ -44,11 +44,11 @@ class Game:
         with open("data/high_score.json", 'r') as f:
             self.high_score = json.load(f)["high_score"]
 
-        blinky = Blinky(self, self._load_start_position(Tile.GHOST_START))
-        pinky = Pinky(self, self._load_start_position(Tile.GHOST_START))
-        inky = Inky(blinky, self, self._load_start_position(Tile.GHOST_START))
-        clyde = Clyde(self, self._load_start_position(Tile.GHOST_START))
-        self.ghosts = [clyde, inky, pinky, blinky]
+        self.blinky = Blinky(self, self._load_start_position(Tile.GHOST_START))
+        self.pinky = Pinky(self, self._load_start_position(Tile.GHOST_START))
+        self.inky = Inky(self, self._load_start_position(Tile.GHOST_START))
+        self.clyde = Clyde(self, self._load_start_position(Tile.GHOST_START))
+        self.ghosts = [self.clyde, self.inky, self.pinky, self.blinky]
 
     def _move(self) -> None:
         self.pacman.move(self.deltatime)
