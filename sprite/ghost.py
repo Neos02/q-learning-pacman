@@ -79,7 +79,7 @@ class Ghost(Entity):
         self.state = GhostState.EATEN
 
     def frighten(self) -> None:
-        if self.state != GhostState.HOME:
+        if self.state not in [GhostState.HOME, GhostState.EATEN]:
             self.state = GhostState.REVERSE
             self.next_tile = self._get_next_tile_coordinates()
 
@@ -106,8 +106,6 @@ class Ghost(Entity):
                 return self._target_pacman()
             case GhostState.EATEN:
                 return self.game.tilemap.find_tile(Tile.GHOST_HOUSE_FIXED)
-            case GhostState.REVERSE:
-                return self.get_current_tile_coordinates() - self._direction
             case GhostState.FRIGHTENED:
                 return tile_choices[random.randint(0, len(tile_choices) - 1)]
             case _:
