@@ -32,8 +32,8 @@ class Pacman(Entity):
             self._direction = self._queued_direction
             self.image.direction = self._direction
             self._align_to_grid(
-                self._direction.x == 0 and self._direction.y != 0,
-                self._direction.x != 0 and self._direction.y == 0
+                self._direction in [Direction.UP, Direction.DOWN],
+                self._direction in [Direction.LEFT, Direction.RIGHT]
             )
 
         if self.freeze_frames > 0:

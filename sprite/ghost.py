@@ -3,6 +3,8 @@ import math
 import random
 
 from pygame import Vector2, SurfaceType
+
+from enums.direction import Direction
 from enums.ghost_state import GhostState
 from sprite.animated_image import AnimatedImage
 from sprite.ghost_eye import GhostEye
@@ -65,8 +67,8 @@ class Ghost(Entity):
 
         self.position = self.position + self._direction * self._get_speed() * deltatime
         self._align_to_grid(
-            self._direction.x == 0 and self._direction.y != 0,
-            self._direction.x != 0 and self._direction.y == 0
+            self._direction in [Direction.UP, Direction.DOWN],
+            self._direction in [Direction.LEFT, Direction.RIGHT]
         )
 
         for eye in self.eyes:

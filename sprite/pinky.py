@@ -1,4 +1,5 @@
 from pygame import Vector2
+from enums.direction import Direction
 from sprite.ghost import Ghost
 
 
@@ -10,7 +11,7 @@ class Pinky(Ghost):
     def _target_pacman(self) -> Vector2:
         target_tile = self.game.pacman.get_current_tile_coordinates()
 
-        if self.game.pacman.direction.y < 0:
+        if self.game.pacman.direction == Direction.UP:
             target_tile.x -= 4
 
         return target_tile + 4 * self.game.pacman.direction
