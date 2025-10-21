@@ -37,6 +37,7 @@ class Ghost(Entity):
         self.eyes: list[GhostEye] = [GhostEye(self.position, Vector2(-3, -3)), GhostEye(self.position, Vector2(3, -3))]
         self.sprite_index: int = sprite_index
         self.next_tile: Vector2 = self._get_next_tile_coordinates()
+        self._queued_direction: Vector2 = Direction.LEFT
 
     def draw(self, surface: SurfaceType) -> None:
         self._update_ghost_image()
@@ -113,31 +114,30 @@ class Ghost(Entity):
                 raise ValueError(f'Unknown ghost state: {self.state}')
 
     def _choose_next_direction(self) -> None:
-        if self.game.tilemap.is_in_bounds(self.next_tile):
-            tile_choices = [
-                Vector2(self.next_tile.x, self.next_tile.y - 1),
-                Vector2(self.next_tile.x, self.next_tile.y + 1),
-                Vector2(self.next_tile.x - 1, self.next_tile.y),
-                Vector2(self.next_tile.x + 1, self.next_tile.y),
-            ]
-            min_distance = math.inf
-            current_tile_x, current_tile_y = self.get_current_tile_coordinates()
-            target = self._choose_target(tile_choices)
-            map_h, map_w = self.game.tilemap.map.shape
+        if not self.game.tilemap.is_in_bounds(self.next_tile):
+            return
 
-            for tile_coords in tile_choices:
-                is_current_tile = (tile_coords.x % map_w, tile_coords.y % map_h) == (current_tile_x % map_w,
-                                                                                     current_tile_y % map_h)
+        if self.state == GhostState.REVERSE:
+            self.state = GhostState.FRIGHTENED
+            self._queued_direction = -self.direction
+            return
 
-                if self._is_transparent_tile(tile_coords) and (not is_current_tile or self.state == GhostState.REVERSE):
-                    if self.state == GhostState.REVERSE:
-                        self.state = GhostState.FRIGHTENED
+        perpendicular_direction = Vector2(self.direction.y, self.direction.x)
+        tile_choices = [
+            self.next_tile + self._direction,
+            self.next_tile + perpendicular_direction,
+            self.next_tile - perpendicular_direction,
+        ]
+        min_distance = math.inf
+        target = self._choose_target(tile_choices)
 
-                    distance = math.dist(tile_coords, target)
+        for tile_coords in tile_choices:
+            if self._is_transparent_tile(tile_coords):
+                distance = math.dist(tile_coords, target)
 
-                    if distance < min_distance:
-                        min_distance = distance
-                        self._queued_direction = tile_coords - self.next_tile
+                if distance < min_distance:
+                    min_distance = distance
+                    self._queued_direction = tile_coords - self.next_tile
 
     def _is_transparent_tile(self, tile_coordinates: Vector2) -> bool:
         current_tile_coordinates = self.get_current_tile_coordinates()

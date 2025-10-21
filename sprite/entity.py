@@ -2,7 +2,6 @@ import pygame
 import abc
 
 from pygame import Vector2, SurfaceType
-
 from sprite.animated_image import AnimatedImage
 from enums.direction import Direction
 from main import FPS, SCREEN_WIDTH, SCREEN_HEIGHT
@@ -17,17 +16,17 @@ class Entity(pygame.sprite.Sprite):
 
     def __init__(self, game, start_position: Vector2 = Vector2(0, 0), image: AnimatedImage = None) -> None:
         super().__init__()
-        self.start_position = start_position
-        self.rect = pygame.Rect(
+        self.start_position: Vector2 = start_position
+        self.rect: pygame.Rect = pygame.Rect(
             start_position.x - self.sprite_size / 2,
             start_position.y - self.sprite_size / 2,
             self.sprite_size,
             self.sprite_size
         )
-        self.image = image
-        self.position = self.start_position.copy()
-        self._direction = Direction.NONE
-        self._queued_direction = Direction.NONE
+        self.image: AnimatedImage = image
+        self.position: Vector2 = self.start_position.copy()
+        self._direction: Vector2 = Direction.NONE
+        self._queued_direction: Vector2 = Direction.NONE
         self.game = game
 
     def draw(self, surface: SurfaceType) -> None:
@@ -73,7 +72,7 @@ class Entity(pygame.sprite.Sprite):
             self.image.position = self._position
 
     @property
-    def direction(self) -> Direction:
+    def direction(self) -> Vector2:
         if self._direction == Direction.NONE:
             return self._queued_direction
 
