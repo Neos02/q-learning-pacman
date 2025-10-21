@@ -5,6 +5,7 @@ from pygame import Vector2
 
 from pygame.locals import *
 
+from enums.direction import Direction
 from enums.ghost_state import GhostState
 from sprite.blinky import Blinky
 from sprite.clyde import Clyde
@@ -56,9 +57,8 @@ class Game:
 
         for ghost in self.ghosts:
             ghost.move(self.deltatime)
-            ghost_tile = ghost.get_current_tile_coordinates()
 
-            if ghost_tile == pacman_tile:
+            if ghost.get_current_tile_coordinates() == pacman_tile:
                 if ghost.state in [GhostState.FRIGHTENED, GhostState.REVERSE]:
                     ghost.eat()
                     self.score += self.ghost_eaten_points
@@ -116,17 +116,17 @@ class Game:
             Game.handle_events()
             self._move()
             self._draw()
-            self.deltatime = pygame.time.Clock().tick(FPS) / 1000
+            self.deltatime = pygame.time.Clock().tick(FPS) * 0.001
 
     def _load_start_position(self, tile: Tile) -> Vector2:
         tile_coordinates = self.tilemap.find_tile(tile)
-        tile_x, tile_y = tile_coordinates
 
-        if tile == Tile.GHOST_START and \
-                (self.tilemap.get_tile(Vector2(tile_x - 1, tile_y)) is Tile.GHOST_HOUSE or
-                 self.tilemap.get_tile(Vector2(tile_x + 1, tile_y)) is Tile.GHOST_HOUSE or
-                 self.tilemap.get_tile(Vector2(tile_x, tile_y - 1)) is Tile.GHOST_HOUSE or
-                 self.tilemap.get_tile(Vector2(tile_x, tile_y + 1)) is Tile.GHOST_HOUSE):
+        if tile == Tile.GHOST_START and Tile.GHOST_HOUSE in [
+            self.tilemap.get_tile(tile_coordinates + Direction.LEFT),
+            self.tilemap.get_tile(tile_coordinates + Direction.UP),
+            self.tilemap.get_tile(tile_coordinates + Direction.RIGHT),
+            self.tilemap.get_tile(tile_coordinates + Direction.DOWN)
+        ]:
             self.tilemap.set_tile(tile_coordinates, Tile.GHOST_HOUSE)
         else:
             self.tilemap.set_tile(tile_coordinates, Tile.AIR)
