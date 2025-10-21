@@ -58,14 +58,12 @@ class Ghost(Entity):
         if self.state == GhostState.EATEN and self._is_in_ghost_house():
             self.state = GhostState.HOME
 
-        next_position = self.position + self._direction * self._get_speed() * deltatime
-
-        if self.get_current_tile_coordinates() == self.next_tile and self._can_move_to_position(next_position):
+        if self.get_current_tile_coordinates() == self.next_tile:
             self._direction = self._queued_direction
             self.next_tile = self._get_next_tile_coordinates()
             self._choose_next_direction()
 
-        self.position = next_position
+        self.position = self.position + self._direction * self._get_speed() * deltatime
         self._align_to_grid(
             self._direction.x == 0 and self._direction.y != 0,
             self._direction.x != 0 and self._direction.y == 0
@@ -111,16 +109,6 @@ class Ghost(Entity):
                 return tile_choices[random.randint(0, len(tile_choices) - 1)]
             case _:
                 raise ValueError(f'Unknown ghost state: {self.state}')
-
-    def _can_move_to_position(self, position: Vector2) -> bool:
-        min_x = min(position.x, self.position.x)
-        max_x = max(position.x, self.position.x)
-        min_y = max(position.y, self.position.y)
-        max_y = max(position.y, self.position.y)
-
-        return self.next_tile is None or \
-            min_x <= (0.5 + self.next_tile.x) * self.game.tilemap.tile_size <= max_x or \
-            min_y <= (0.5 + self.next_tile.y) * self.game.tilemap.tile_size <= max_y
 
     def _choose_next_direction(self) -> None:
         if self.game.tilemap.is_in_bounds(self.next_tile):
