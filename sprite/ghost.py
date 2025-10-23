@@ -58,7 +58,7 @@ class Ghost(Entity):
         if self.state == GhostState.HOME and not self._is_in_ghost_house():
             self.state = GhostState.CHASE
 
-        if self.state == GhostState.EATEN and self._is_in_ghost_house():
+        if self.state == GhostState.EATEN and self.get_current_tile() == Tile.GHOST_HOUSE:
             self.reset(False)
 
         if self.released and self.get_current_tile_coordinates() == self.next_tile:
