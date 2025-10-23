@@ -29,8 +29,9 @@ class Game:
         )
     )
 
-    dot_timer_max_value = 4
-    ghost_eaten_base_value = 200
+    dot_timer_max_value: int = 4
+    global_dot_counter_deactivate_limit: int = 32
+    ghost_eaten_base_value: int = 200
 
     def __init__(self):
         self.deltatime = 0
@@ -50,6 +51,8 @@ class Game:
         self.inky = Inky(self, self._load_start_position(Tile.GHOST_START))
         self.clyde = Clyde(self, self._load_start_position(Tile.GHOST_START))
         self.ghosts = [self.clyde, self.inky, self.pinky, self.blinky]
+        self.global_dot_counter = 0
+        self.global_dot_counter_active = False
 
     def _move(self) -> None:
         self.pacman.move(self.deltatime)
@@ -64,7 +67,7 @@ class Game:
                     self.score += self.ghost_eaten_points
                     self.ghost_eaten_points *= 2
                 elif ghost.state != GhostState.EATEN:
-                    self.game_over()
+                    self.die()
 
         self.pellet_time_seconds -= self.deltatime
 
@@ -143,10 +146,22 @@ class Game:
         self.dot_timer_seconds = self.dot_timer_max_value
         self.score += 10
 
+        if self.global_dot_counter_active:
+            self.global_dot_counter += 1
+
         for ghost in reversed(self.ghosts):
             if ghost.state == GhostState.HOME:
-                ghost.dot_counter += 1
+                if not self.global_dot_counter:
+                    ghost.dot_counter += 1
+
+                if self.global_dot_counter == ghost.global_dot_limit:
+                    ghost.released = True
                 break
+
+        if self.global_dot_counter == self.global_dot_counter_deactivate_limit \
+                and self.clyde.state == GhostState.HOME:
+            self.global_dot_counter = 0
+            self.global_dot_counter_active = False
 
     def eat_big_dot(self, tile_coordinates: Vector2) -> None:
         self.tilemap.set_tile(tile_coordinates, Tile.AIR)
@@ -158,6 +173,17 @@ class Game:
 
     def die(self) -> None:
         self.lives -= 1
+        self.global_dot_counter_active = True
+        self.global_dot_counter = 0
+        self.dot_timer_seconds = self.dot_timer_max_value
+
+        self.pacman.reset()
+
+        for ghost in self.ghosts:
+            ghost.reset()
+
+        if self.lives <= 0:
+            self.game_over()
 
     def game_over(self) -> None:
         print(self.score)

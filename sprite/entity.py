@@ -39,6 +39,13 @@ class Entity(pygame.sprite.Sprite):
     def get_current_tile(self) -> Tile:
         return self.game.tilemap.get_tile(self.get_current_tile_coordinates())
 
+    def reset(self, reset_position: bool = True) -> None:
+        if reset_position:
+            self.position = self.start_position
+
+        self._direction: Vector2 = Direction.NONE
+        self._queued_direction: Vector2 = Direction.NONE
+
     def _is_transparent_tile(self, tile_coordinates: Vector2) -> bool:
         return self.game.tilemap.get_tile(tile_coordinates) in [Tile.AIR, Tile.SMALL_DOT, Tile.BIG_DOT, Tile.GHOST_SLOW]
 

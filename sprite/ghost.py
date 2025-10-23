@@ -34,6 +34,7 @@ class Ghost(Entity):
         self.released: bool = False
         self.dot_counter: int = 0
         self.dot_limit: int = 0
+        self.global_dot_limit: int = 0
         self.eyes: list[GhostEye] = [GhostEye(self.position, Vector2(-3, -3)), GhostEye(self.position, Vector2(3, -3))]
         self.sprite_index: int = sprite_index
         self.next_tile: Vector2 = self._get_next_tile_coordinates()
@@ -50,18 +51,17 @@ class Ghost(Entity):
                 eye.draw(surface)
 
     def move(self, deltatime: float) -> None:
-        if self.state == GhostState.HOME and self.dot_counter == self.dot_limit:
+        if self.state == GhostState.CHASE or not self.game.global_dot_counter_active \
+                and self.state == GhostState.HOME and self.dot_counter >= self.dot_limit:
             self.released = True
-        elif not self.released:
-            return
 
         if self.state == GhostState.HOME and not self._is_in_ghost_house():
             self.state = GhostState.CHASE
 
         if self.state == GhostState.EATEN and self._is_in_ghost_house():
-            self.state = GhostState.HOME
+            self.reset(False)
 
-        if self.get_current_tile_coordinates() == self.next_tile:
+        if self.released and self.get_current_tile_coordinates() == self.next_tile:
             self._direction = self._queued_direction
             self.next_tile = self._get_next_tile_coordinates()
             self._choose_next_direction()
@@ -82,6 +82,13 @@ class Ghost(Entity):
         if self.state not in [GhostState.HOME, GhostState.EATEN]:
             self.state = GhostState.REVERSE
             self.next_tile = self._get_next_tile_coordinates()
+
+    def reset(self, reset_position: bool = True) -> None:
+        super().reset(reset_position)
+        self._queued_direction = Direction.LEFT
+        self.state = GhostState.HOME
+        self.next_tile = self._get_next_tile_coordinates()
+        self.released = False
 
     def _is_in_ghost_house(self) -> bool:
         return self.get_current_tile() in [Tile.GHOST_HOUSE, Tile.GHOST_HOUSE_FIXED, Tile.GHOST_GATE]

@@ -9,7 +9,8 @@ class Clyde(Ghost):
 
     def __init__(self, game, start_position: Vector2 = Vector2(0, 0)) -> None:
         super().__init__(game, start_position, 3)
-        self.dot_limit = 60
+        self.dot_limit: int = 60
+        self.global_dot_limit: int = self.dot_limit
 
     def _target_pacman(self) -> Vector2:
         pacman_coords = self.game.pacman.get_current_tile_coordinates()
