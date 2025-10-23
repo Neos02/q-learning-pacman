@@ -119,6 +119,10 @@ class Game:
             Game.handle_events()
             self._move()
             self._draw()
+
+            if self.tilemap.is_empty():
+                self.game_over()
+
             self.deltatime = pygame.time.Clock().tick(FPS) * 0.001
 
     def _load_start_position(self, tile: Tile) -> Vector2:

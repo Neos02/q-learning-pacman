@@ -50,7 +50,20 @@ class Tilemap:
 
     def find_tile(self, tile: Tile) -> Vector2:
         position = np.where(self.map == tile.value)
+
+        if np.size(position) == 0:
+            return Vector2(-1)
+
         return Vector2(int(position[1][0]), int(position[0][0]))
+
+    def is_empty(self) -> bool:
+        tiles_to_check = [Tile.SMALL_DOT, Tile.BIG_DOT, Tile.GHOST_NO_UPWARD_TURN_DOT]
+
+        for tile in tiles_to_check:
+            if self.find_tile(tile) != Vector2(-1):
+                return False
+
+        return True
 
     def get_tile_coordinates(self, position: Vector2) -> Vector2:
         h, w = self.map.shape
